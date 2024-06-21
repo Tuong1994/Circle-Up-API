@@ -1,0 +1,224 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  password String
+  phone    String
+  role     Int
+
+  firstName String?
+  lastName  String?
+  fullName  String?
+  gender    Int?
+  birthday  String?
+
+  isDelete          Boolean?
+  resetToken        String?
+  resetTokenExpires BigInt?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  address        UserAddress?
+  permission     UserPermission?
+  auth           Auth?
+  image          Media?
+  likes          Like[]
+  comments       Comment[]
+  posts          Post[]
+  usersFollowed  Follow[]        @relation(name: "userFollowed")
+  usersFollowing Follow[]        @relation(name: "userFollowing")
+  eventsCreated  Event[]         @relation(name: "creator")
+  eventsAttended EventOnUser[]
+}
+
+model UserAddress {
+  id            String @id @default(uuid())
+  addressEn     String
+  addressVn     String
+  fullAddressEn String
+  fullAddressVn String
+  cityCode      Int
+  districtCode  Int
+  wardCode      Int
+
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserPermission {
+  id     String  @id @default(uuid())
+  create Boolean
+  update Boolean
+  remove Boolean
+
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Auth {
+  id        String   @id @default(uuid())
+  token     String   @db.VarChar(3000)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Post {
+  id      String @id @default(uuid())
+  content String
+
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  comments Comment[]
+  likes    Like[]
+  medias   Media[]
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  date        DateTime
+
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creatorId String
+  creator   User          @relation("creator", fields: [creatorId], references: [id], onDelete: Cascade)
+  attendees EventOnUser[]
+}
+
+model EventOnUser {
+  id String @id @default(uuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId String
+}
+
+model Follow {
+  id String @id @default(uuid())
+
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  followerId String
+  follower   User   @relation("userFollowed", fields: [followerId], references: [id], onDelete: Cascade)
+  followedId String
+  followed   User   @relation("userFollowing", fields: [followedId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id      String @id @default(uuid())
+  content String @db.VarChar(3000)
+
+  parentId  String?
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Like {
+  id String @id @default(uuid())
+
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+}
+
+model Media {
+  id       String @id @default(uuid())
+  path     String
+  size     Int
+  publicId String
+  type     String
+
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String?
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model City {
+  id     String @id @default(uuid())
+  nameEn String
+  nameVn String
+  code   Int
+
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model District {
+  id       String @id @default(uuid())
+  nameEn   String
+  nameVn   String
+  code     Int
+  cityCode Int
+
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ward {
+  id           String @id @default(uuid())
+  nameEn       String
+  nameVn       String
+  code         Int
+  districtCode Int
+
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
