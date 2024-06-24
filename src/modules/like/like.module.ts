@@ -1,25 +1,25 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
-import { FollowController } from './follow.controller';
-import { FollowService } from './follow.service';
+import { LikeController } from './like.controller';
+import { LikeService } from './like.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CheckIdMiddleware } from 'src/common/middleware/checkId.middleware';
 
 @Module({
-  controllers: [FollowController],
-  providers: [FollowService],
+  controllers: [LikeController],
+  providers: [LikeService],
 })
-export class FollowModule implements NestModule {
+export class LikeModule implements NestModule {
   constructor(private prisma: PrismaService) {}
 
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(new CheckIdMiddleware(this.prisma, 'follow').use).forRoutes(
+    consumer.apply(new CheckIdMiddleware(this.prisma, 'like').use).forRoutes(
       {
-        path: 'api/follow/detail',
+        path: 'api/like/detail',
         method: RequestMethod.GET,
       },
       {
-        path: 'api/follow/update',
-        method: RequestMethod.PUT,
+        path: 'api/like/update',
+        method: RequestMethod.POST,
       },
     );
   }
