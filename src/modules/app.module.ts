@@ -12,6 +12,7 @@ import { DistrictModule } from './district/district.module';
 import { WardModule } from './ward/ward.module';
 import { PostModule } from './post/post.module';
 import { EventModule } from './event/event.module';
+import { FollowModule } from './follow/follow.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { EventModule } from './event/event.module';
     UserModule,
     PostModule,
     EventModule,
+    FollowModule,
     CommentModule,
     CityModule,
     DistrictModule,

@@ -63,7 +63,7 @@ export class PostController {
   }
 
   @Delete('removePermanent')
-  @Roles(ERole.MANAGER, ERole.LEADER)
+  @Roles(ERole.MANAGER)
   @UseGuards(JwtGuard, RoleGuard)
   @HttpCode(HttpStatus.OK)
   removePostsPermanent(@Query() query: QueryDto) {
@@ -71,7 +71,7 @@ export class PostController {
   }
 
   @Post('restore')
-  @Roles(ERole.MANAGER, ERole.LEADER)
+  @Roles(ERole.LEADER, ERole.MANAGER)
   @UseGuards(JwtGuard, RoleGuard)
   @HttpCode(HttpStatus.OK)
   restorePosts() {
