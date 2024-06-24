@@ -10,6 +10,7 @@ import {
   Put,
   Delete,
   UseGuards,
+  Body,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { QueryPaging } from 'src/common/decorator/query.decorator';
@@ -42,7 +43,7 @@ export class PostController {
   @UseGuards(JwtGuard)
   @UseInterceptors(FilesInterceptor('media', 5, multerOption()))
   @HttpCode(HttpStatus.CREATED)
-  createPost(@Query() query: QueryDto, @UploadedFiles() files: Express.Multer.File[], post: PostDto) {
+  createPost(@Query() query: QueryDto, @UploadedFiles() files: Express.Multer.File[], @Body() post: PostDto) {
     return this.postService.createPost(query, files, post);
   }
 
@@ -50,7 +51,7 @@ export class PostController {
   @UseGuards(JwtGuard)
   @UseInterceptors(FilesInterceptor('media', 5, multerOption()))
   @HttpCode(HttpStatus.OK)
-  updatePost(@Query() query: QueryDto, @UploadedFiles() files: Express.Multer.File[], post: PostDto) {
+  updatePost(@Query() query: QueryDto, @UploadedFiles() files: Express.Multer.File[], @Body() post: PostDto) {
     return this.postService.updatePost(query, files, post);
   }
 
