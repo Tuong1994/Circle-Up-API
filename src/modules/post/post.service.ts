@@ -17,7 +17,6 @@ export class PostService {
 
   async getPosts(query: QueryDto) {
     const { page, limit, sortBy } = query;
-
     let collection: Paging<Post> = utils.defaultCollection();
     const posts = await this.prisma.post.findMany({
       where: {
@@ -27,31 +26,24 @@ export class PostService {
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
     });
     collection = utils.paging<Post>(posts, page, limit);
-
     return collection;
   }
 
   async getPost(query: QueryDto) {
     const { postId } = query;
-
     const post = await this.prisma.post.findUnique({ where: { id: postId } });
-
     return post;
   }
 
   async createPost(query: QueryDto, files: Express.Multer.File[], post: PostDto) {
     const { video } = query;
     const { content, userId } = post;
-
     const newPost = await this.prisma.post.create({
       data: { content, userId, isDelete: false },
       include: { medias: true },
     });
-
     if (!newPost) throw new HttpException('Create failed', HttpStatus.BAD_REQUEST);
-
     if (!files.length) return newPost;
-
     await Promise.all(
       files.map(async (file) => {
         const result = await this.cloudinary.upload(utils.getFileUrl(file));
@@ -60,18 +52,14 @@ export class PostService {
         await this.prisma.media.create({ data: { ...media, isDelete: false } });
       }),
     );
-
     return newPost;
   }
 
   async updatePost(query: QueryDto, files: Express.Multer.File[], post: PostDto) {
     const { postId, video } = query;
     const { content, userId } = post;
-
     await this.prisma.post.update({ where: { id: postId }, data: { content, userId } });
-
     if (!files.length) throw new HttpException('Updated success', HttpStatus.OK);
-
     await Promise.all(
       files.map(async (file) => {
         const result = await this.cloudinary.upload(utils.getFileUrl(file));
@@ -80,21 +68,17 @@ export class PostService {
         await this.prisma.media.create({ data: { ...media, isDelete: false } });
       }),
     );
-
     throw new HttpException('Updated success', HttpStatus.OK);
   }
 
   async removePosts(query: QueryDto) {
     const { ids } = query;
-
     const listIds = ids.split(',');
     const posts = await this.prisma.post.findMany({
       where: { id: { in: listIds } },
       select: { id: true, medias: true, comments: true, likes: true },
     });
-
     if (posts && !posts.length) throw new HttpException('Posts not found', HttpStatus.NOT_FOUND);
-
     await this.prisma.post.updateMany({ where: { id: { in: listIds } }, data: { isDelete: true } });
     await Promise.all(
       posts.map(async (post) => {
@@ -106,23 +90,18 @@ export class PostService {
           await this.prisma.like.updateMany({ where: { postId: post.id }, data: { isDelete: true } });
       }),
     );
-
     throw new HttpException('Removed success', HttpStatus.OK);
   }
 
   async removePostsPermanent(query: QueryDto) {
     const { ids } = query;
-
     const listIds = ids.split(',');
     const posts = await this.prisma.post.findMany({
       where: { id: { in: listIds } },
       include: { medias: true },
     });
-
     if (posts && !posts.length) throw new HttpException('Posts not found', HttpStatus.NOT_FOUND);
-
     await this.prisma.post.deleteMany({ where: { id: { in: listIds } } });
-
     posts.map(async (post) => {
       await Promise.all(
         post.medias?.map(async (media) => {
@@ -131,7 +110,6 @@ export class PostService {
         }),
       );
     });
-
     throw new HttpException('Removed success', HttpStatus.OK);
   }
 

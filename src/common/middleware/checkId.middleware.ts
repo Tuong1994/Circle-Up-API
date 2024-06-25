@@ -26,7 +26,7 @@ export class CheckIdMiddleware implements NestMiddleware {
       followId,
       commentId,
       likeId,
-      imageId,
+      mediaId,
       cityId,
       districtId,
       wardId,
@@ -40,7 +40,7 @@ export class CheckIdMiddleware implements NestMiddleware {
       !followId &&
       !commentId &&
       !likeId &&
-      !imageId &&
+      !mediaId &&
       !cityId &&
       !districtId &&
       !wardId
@@ -61,7 +61,7 @@ export class CheckIdMiddleware implements NestMiddleware {
             followId ||
             commentId ||
             likeId ||
-            imageId ||
+            mediaId ||
             cityId ||
             districtId ||
             wardId,

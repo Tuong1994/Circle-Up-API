@@ -14,6 +14,7 @@ import { PostModule } from './post/post.module';
 import { EventModule } from './event/event.module';
 import { FollowModule } from './follow/follow.module';
 import { LikeModule } from './like/like.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { LikeModule } from './like/like.module';
     CityModule,
     DistrictModule,
     WardModule,
+    MediaModule,
   ],
 })
 export class AppModule {}
