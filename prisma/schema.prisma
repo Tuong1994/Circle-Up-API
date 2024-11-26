@@ -14,56 +14,129 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
-  email    String @unique
-  password String
-  phone    String
-  role     Int
-
-  firstName String?
-  lastName  String?
-  fullName  String?
-  gender    Int?
-  birthday  String?
-
+  id                String          @id @default(uuid())
+  firstName         String
+  lastName          String
+  password          String
+  role              Int
   isDelete          Boolean?
   resetToken        String?
   resetTokenExpires BigInt?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  address        UserAddress?
-  permission     UserPermission?
-  auth           Auth?
-  image          Media?
-  likes          Like[]
-  comments       Comment[]
-  posts          Post[]
-  usersFollowed  Follow[]        @relation(name: "userFollowed")
-  usersFollowing Follow[]        @relation(name: "userFollowing")
-  eventsCreated  Event[]         @relation(name: "creator")
-  eventsAttended EventOnUser[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  auth              Auth?
+  permission        Permission?
+  media             Media?
+  email             UserEmail?
+  lived             UserLived?
+  info              UserInfo[]
+  works             UserWork[]
+  educations        UserEducation[]
+  likes             Like[]
+  comments          Comment[]
+  posts             Post[]
+  postTags          PostOnUser[]
+  usersFollowed     Follow[]        @relation(name: "userFollowed")
+  usersFollowing    Follow[]        @relation(name: "userFollowing")
+  eventsCreated     Event[]         @relation(name: "creator")
+  eventsAttended    EventOnUser[]
+  friendsRequest    Friend[]        @relation(name: "requester")
+  friendsReceive    Friend[]        @relation(name: "receiver")
 }
 
-model UserAddress {
-  id            String @id @default(uuid())
-  addressEn     String
-  addressVn     String
-  fullAddressEn String
-  fullAddressVn String
-  cityCode      Int
-  districtCode  Int
-  wardCode      Int
-
+model UserEmail {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  audience  Int
   isDelete  Boolean?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model UserPermission {
+model UserInfo {
+  id        String   @id @default(uuid())
+  content   String
+  type      Int
+  audience  Int
+  isDelete  Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserWork {
+  id          String      @id @default(uuid())
+  company     String
+  position    String
+  audience    Int
+  cityCode    Int
+  isCurrently Boolean
+  isDelete    Boolean?
+  description String      @db.VarChar(3000)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timePeriod  TimePeriod?
+}
+
+model UserEducation {
+  id          String      @id @default(uuid())
+  school      String
+  audience    Int
+  isGraduated Boolean
+  isDelete    Boolean?
+  description String      @db.VarChar(3000)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timePeriod  TimePeriod?
+}
+
+model UserLived {
+  id           String   @id @default(uuid())
+  cityCode     Int
+  districtCode Int
+  audience     Int
+  isDelete     Boolean?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TimePeriod {
+  id              String        @id @default(uuid())
+  isDelete        Boolean?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  startDate       DateRange?    @relation(name: "startDate")
+  endDate         DateRange?    @relation(name: "endDate")
+  userWorkId      String        @unique
+  userWork        UserWork      @relation(fields: [userWorkId], references: [id], onDelete: Cascade)
+  userEducationId String        @unique
+  userEducation   UserEducation @relation(fields: [userEducationId], references: [id], onDelete: Cascade)
+}
+
+model DateRange {
+  id          String     @id @default(uuid())
+  year        Int
+  month       Int
+  date        Int
+  isDelete    Boolean?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  startDateId String     @unique
+  startDate   TimePeriod @relation("startDate", fields: [startDateId], references: [id], onDelete: Cascade)
+  endDateId   String     @unique
+  endDate     TimePeriod @relation("endDate", fields: [endDateId], references: [id], onDelete: Cascade)
+}
+
+model Permission {
   id     String  @id @default(uuid())
   create Boolean
   update Boolean
@@ -82,146 +155,154 @@ model Auth {
   token     String   @db.VarChar(3000)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Friend {
+  id          String   @id @default(uuid())
+  status      Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  requesterId String   @unique
+  requester   User     @relation("requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiverId  String   @unique
+  receiver    User     @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, receiverId])
 }
 
 model Post {
-  id      String @id @default(uuid())
-  content String
-
+  id        String       @id @default(uuid())
+  content   String
+  cityCode  Int?
+  feeling   Int?
+  audience  Int
   isDelete  Boolean?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   comments  Comment[]
   likes     Like[]
   medias    Media[]
   followers Follow[]
+  tags      PostOnUser[]
+}
+
+model PostOnUser {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Event {
-  id          String   @id @default(uuid())
+  id          String        @id @default(uuid())
   title       String
   description String?
   date        DateTime
-
-  isDelete  Boolean?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  creatorId String
-  creator   User          @relation("creator", fields: [creatorId], references: [id], onDelete: Cascade)
-  attendees EventOnUser[]
+  isDelete    Boolean?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  creatorId   String
+  creator     User          @relation("creator", fields: [creatorId], references: [id], onDelete: Cascade)
+  attendees   EventOnUser[]
 }
 
 model EventOnUser {
-  id String @id @default(uuid())
-
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId  String
-  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  eventId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId   String
 }
 
 model Follow {
-  id String @id @default(uuid())
-
-  isDelete  Boolean?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id         String   @id @default(uuid())
+  isDelete   Boolean?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   followerId String
-  follower   User   @relation("userFollowed", fields: [followerId], references: [id], onDelete: Cascade)
+  follower   User     @relation("userFollowed", fields: [followerId], references: [id], onDelete: Cascade)
   followedId String
-  followed   User   @relation("userFollowing", fields: [followedId], references: [id], onDelete: Cascade)
+  followed   User     @relation("userFollowing", fields: [followedId], references: [id], onDelete: Cascade)
   postId     String
-  post       Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model Comment {
-  id      String @id @default(uuid())
-  content String @db.VarChar(3000)
-
+  id        String   @id @default(uuid())
+  content   String   @db.VarChar(3000)
   parentId  String?
   isDelete  Boolean?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model Like {
-  id String @id @default(uuid())
-
+  id        String   @id @default(uuid())
   isDelete  Boolean?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
 }
 
 model Media {
-  id       String @id @default(uuid())
-  path     String
-  size     Int
-  publicId String
-  type     String
-
+  id        String   @id @default(uuid())
+  path      String
+  size      Int
+  publicId  String
+  type      String
   isDelete  Boolean?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  userId String? @unique
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId String?
-  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model City {
-  id     String @id @default(uuid())
-  nameEn String
-  nameVn String
-  code   Int
-
+  id        String   @id @default(uuid())
+  nameEn    String
+  nameVn    String
+  code      Int
   isDelete  Boolean?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model District {
-  id       String @id @default(uuid())
-  nameEn   String
-  nameVn   String
-  code     Int
-  cityCode Int
-
+  id        String   @id @default(uuid())
+  nameEn    String
+  nameVn    String
+  code      Int
+  cityCode  Int
   isDelete  Boolean?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Ward {
-  id           String @id @default(uuid())
+  id           String   @id @default(uuid())
   nameEn       String
   nameVn       String
   code         Int
   districtCode Int
-
-  isDelete  Boolean?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isDelete     Boolean?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

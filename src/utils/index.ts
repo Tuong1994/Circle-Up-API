@@ -37,11 +37,7 @@ const utils = {
     return { totalItems: 0, items: [] };
   },
 
-  generateFile: (
-    result: UploadApiResponse,
-    option?: MediaOption,
-    type = EMediaType.IMAGE,
-  ) => {
+  generateFile: (result: UploadApiResponse, option?: MediaOption, type = EMediaType.IMAGE) => {
     const defaultFile: Pick<Media, 'path' | 'size' | 'publicId'> = {
       path: '',
       size: 0,
@@ -108,6 +104,15 @@ const utils = {
 
     if (phone.length === telNumberLength) return telFormat;
     return mobileFormat;
+  },
+
+  convertRecordsName: <M>(record: M, langCode: ELang) => {
+    if (!record) return null;
+    const recordClone = { ...record };
+    delete record['nameEn'];
+    delete record['nameVn'];
+    const data = { name: langCode === ELang.EN ? recordClone['nameEn'] : recordClone['nameVn'], ...record };
+    return data;
   },
 };
 

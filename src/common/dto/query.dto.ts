@@ -1,5 +1,4 @@
-import { ELang, ERecordStatus, ERole } from '../enum/base';
-import { EGender } from 'src/modules/user/user.enum';
+import { ELang, ERole } from '../enum/base';
 
 export class QueryDto {
   page?: string;
@@ -28,6 +27,5 @@ export class QueryDto {
   video?: boolean;
 
   role?: ERole;
-  gender?: EGender;
   langCode?: ELang;
 }

@@ -23,13 +23,13 @@ export enum ESort {
   PRICE_GO_DOWN = 4,
 }
 
-export enum ERecordStatus {
-  DRAFT = 1,
-  ACTIVE = 2,
-  ALL = 3,
-}
-
 export enum EMediaType {
   IMAGE = 'image',
   VIDEO = 'video',
+}
+
+export enum EAudience {
+  PUBLIC = 1,
+  FRIENDS = 2,
+  PRIVATE = 3,
 }

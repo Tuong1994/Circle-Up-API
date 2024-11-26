@@ -4,7 +4,6 @@ import { QueryDto } from 'src/common/dto/query.dto';
 import { LikeDto } from './like.dto';
 import { Like } from '@prisma/client';
 import { Paging } from 'src/common/type/base';
-import { ELang } from 'src/common/enum/base';
 import utils from 'src/utils';
 
 @Injectable()

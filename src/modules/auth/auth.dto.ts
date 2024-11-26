@@ -1,15 +1,25 @@
-import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 
-export class AuthDto {
+export class AuthSignInDto {
   @IsNotEmpty()
-  @IsEmail()
+  email: string;
+
+  @IsNotEmpty()
+  password: string;
+}
+
+export class AuthSignUpDto {
+  @IsNotEmpty()
   email: string;
 
   @IsNotEmpty()
   password: string;
 
-  @IsOptional()
-  phone: string;
+  @IsNotEmpty()
+  firstName: string;
+
+  @IsNotEmpty()
+  lastName: string;
 }
 
 export class AuthChangePasswordDto {
@@ -18,18 +28,4 @@ export class AuthChangePasswordDto {
 
   @IsNotEmpty()
   newPassword: string;
-}
-
-export class AuthForgotPasswordDto {
-  @IsNotEmpty()
-  @IsEmail()
-  email: string;
-}
-
-export class AuthResetPasswordDto {
-  @IsNotEmpty()
-  resetPassword: string;
-
-  @IsNotEmpty()
-  token: string;
 }

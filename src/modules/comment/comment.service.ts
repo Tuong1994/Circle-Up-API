@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { QueryDto } from 'src/common/dto/query.dto';
 import { Paging, List } from 'src/common/type/base';
-import { Comment, Post } from '@prisma/client';
+import { Comment } from '@prisma/client';
 import { CommentDto } from './comment.dto';
 import utils from 'src/utils';
 
