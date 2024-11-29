@@ -26,12 +26,12 @@ model User {
   updatedAt         DateTime        @updatedAt
   auth              Auth?
   permission        Permission?
-  media             Media?
-  email             UserEmail?
+  account           UserEmail?
   lived             UserLived?
-  info              UserInfo[]
+  infos             UserInfo[]
   works             UserWork[]
   educations        UserEducation[]
+  medias            Media[]
   likes             Like[]
   comments          Comment[]
   posts             Post[]

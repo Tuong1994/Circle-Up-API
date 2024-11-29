@@ -10,6 +10,7 @@ import { DistrictModule } from './district/district.module';
 import { WardModule } from './ward/ward.module';
 import { LikeModule } from './like/like.module';
 import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AuthModule } from './auth/auth.module';
     ExcelModule,
     EmailModule,
     AuthModule,
+    UserModule,
     CommentModule,
     LikeModule,
     CityModule,

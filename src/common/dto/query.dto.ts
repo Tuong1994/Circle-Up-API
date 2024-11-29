@@ -8,6 +8,10 @@ export class QueryDto {
 
   ids?: string;
   userId?: string;
+  userInfoId?: string;
+  userWorkId?: string;
+  userEducationId?: string;
+  userLivedId?: string;
   postId?: string;
   eventId?: string;
   followId?: string;

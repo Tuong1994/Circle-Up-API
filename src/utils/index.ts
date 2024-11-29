@@ -114,6 +114,10 @@ const utils = {
     const data = { name: langCode === ELang.EN ? recordClone['nameEn'] : recordClone['nameVn'], ...record };
     return data;
   },
+
+  filterByKeywords: (value: string, keywords: string) => {
+    return value.toLowerCase().includes(keywords);
+  },
 };
 
 export default utils;

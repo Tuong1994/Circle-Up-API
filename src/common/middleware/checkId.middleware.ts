@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NestMiddleware,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { NextFunction, Request, Response } from 'express';
 
@@ -21,6 +16,10 @@ export class CheckIdMiddleware implements NestMiddleware {
     const {
       ids,
       userId,
+      userInfoId,
+      userWorkId,
+      userEducationId,
+      userLivedId,
       postId,
       eventId,
       followId,
@@ -35,6 +34,10 @@ export class CheckIdMiddleware implements NestMiddleware {
     if (
       !ids &&
       !userId &&
+      !userInfoId &&
+      !userWorkId &&
+      !userEducationId &&
+      !userLivedId &&
       !postId &&
       !eventId &&
       !followId &&
@@ -56,6 +59,10 @@ export class CheckIdMiddleware implements NestMiddleware {
       where: {
         [checkedField]: String(
           userId ||
+            userInfoId ||
+            userWorkId ||
+            userEducationId ||
+            userLivedId ||
             postId ||
             eventId ||
             followId ||
