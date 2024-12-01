@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { QueryDto } from 'src/common/dto/query.dto';
 import { Paging } from 'src/common/type/base';
 import { UserResponse } from './user.type';
-import { UserDto, UserEducationDto, UserInfoDto, UserLivedDto, UserWorkDto } from './user.dto';
+import { UserDto, UserEducationDto, UserInfoDto, UserLivedDto, UserUpdateDto, UserWorkDto } from './user.dto';
 import { EAudience } from 'src/common/enum/base';
 import { EUserInfoType } from './user.enum';
 import { UserEmail, UserInfo } from '@prisma/client';
@@ -44,34 +44,14 @@ export class UserService {
   async getUser(query: QueryDto) {
     const { userId } = query;
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: userId, isDelete: { equals: false } },
       select: {
         ...this.userHelper.getUserFields(),
-        account: { select: { ...this.userHelper.getUserEmailFields() } },
-        infos: { select: { ...this.userHelper.getUserInfoFields() } },
-        works: {
-          select: {
-            ...this.userHelper.getUserWorkFields(),
-            timePeriod: {
-              select: {
-                startDate: { select: { ...this.userHelper.getDateRangeFields() } },
-                endDate: { select: { ...this.userHelper.getDateRangeFields() } },
-              },
-            },
-          },
-        },
-        educations: {
-          select: {
-            ...this.userHelper.getUserEducationFields(),
-            timePeriod: {
-              select: {
-                startDate: { select: { ...this.userHelper.getDateRangeFields() } },
-                endDate: { select: { ...this.userHelper.getDateRangeFields() } },
-              },
-            },
-          },
-        },
-        lived: { select: { ...this.userHelper.getUserLivedFields() } },
+        account: this.userHelper.getAccountSelection(),
+        infos: this.userHelper.getInfoSelection(),
+        works: this.userHelper.getWorkSelection(),
+        educations: this.userHelper.getEducationSelection(),
+        lived: this.userHelper.getLivedSelection(),
       },
     });
     return user;
@@ -82,11 +62,13 @@ export class UserService {
     const hash = utils.bcryptHash(password);
     const newUser = await this.prisma.user.create({
       data: { password: hash, firstName, lastName, role, isDelete: false },
+      select: { ...this.userHelper.getUserFields() },
     });
-    await this.prisma.userEmail.create({
+    const newUserEmail = await this.prisma.userEmail.create({
       data: { email, userId: newUser.id, isDelete: false, audience: EAudience.PUBLIC },
+      select: { ...this.userHelper.getUserEmailFields() },
     });
-    return newUser;
+    return { ...newUser, account: { ...newUserEmail } };
   }
 
   async createUserInfo(info: UserInfoDto) {
@@ -152,7 +134,7 @@ export class UserService {
     return newLived;
   }
 
-  async updateUser(query: QueryDto, user: UserDto) {
+  async updateUser(query: QueryDto, user: UserUpdateDto) {
     const { userId } = query;
     const { firstName, lastName, role } = user;
     await this.prisma.user.update({ where: { id: userId }, data: { firstName, lastName, role } });
@@ -230,10 +212,10 @@ export class UserService {
     await Promise.all(
       users.map(async (user) => {
         await this.prisma.userEmail.update({ where: { userId: user.id }, data: { isDelete: true } });
-        if (user.lived) await this.userHelper.handleRemoveUserLived(user);
-        if (user.infos.length > 0) await this.userHelper.handleRemoveUserInfos(user);
-        if (user.works.length > 0) await this.userHelper.handleRemoveUserWorks(user);
-        if (user.educations.length > 0) await this.userHelper.handleRemoveUserEducations(user);
+        if (user.lived) await this.userHelper.handleUpdateIsDeleteUserLived(user, true);
+        if (user.infos.length > 0) await this.userHelper.handleUpdateIsDeleteUserInfos(user, true);
+        if (user.works.length > 0) await this.userHelper.handleUpdateIsDeleteUserWorks(user, true);
+        if (user.educations.length > 0) await this.userHelper.handleUpdateIsDeleteUserEducations(user, true);
       }),
     );
     throw new HttpException('Removed success', HttpStatus.OK);
@@ -252,11 +234,19 @@ export class UserService {
   }
 
   async restoreUsers() {
-    const users = await this.prisma.user.findMany({ where: { isDelete: { equals: true } } });
+    const users = await this.prisma.user.findMany({
+      where: { isDelete: { equals: true } },
+      select: { id: true, infos: true, account: true, works: true, educations: true, lived: true },
+    });
     if (users && !users.length) throw new HttpException('No data to restored', HttpStatus.OK);
     await Promise.all(
       users.map(async (user) => {
         await this.prisma.user.update({ where: { id: user.id }, data: { isDelete: false } });
+        await this.prisma.userEmail.update({ where: { userId: user.id }, data: { isDelete: false } });
+        if (user.lived) await this.userHelper.handleUpdateIsDeleteUserLived(user, false);
+        if (user.infos.length > 0) await this.userHelper.handleUpdateIsDeleteUserInfos(user, false);
+        if (user.works.length > 0) await this.userHelper.handleUpdateIsDeleteUserWorks(user, false);
+        if (user.educations.length > 0) await this.userHelper.handleUpdateIsDeleteUserEducations(user, false);
       }),
     );
     throw new HttpException('Restored success', HttpStatus.OK);

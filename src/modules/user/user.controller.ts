@@ -13,7 +13,7 @@ import {
 import { UserService } from './user.service';
 import { QueryPaging } from 'src/common/decorator/query.decorator';
 import { QueryDto } from 'src/common/dto/query.dto';
-import { UserDto, UserEducationDto, UserInfoDto, UserLivedDto, UserWorkDto } from './user.dto';
+import { UserDto, UserEducationDto, UserInfoDto, UserLivedDto, UserUpdateDto, UserWorkDto } from './user.dto';
 import { JwtGuard } from 'src/common/guard/jwt.guard';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { ERole } from 'src/common/enum/base';
@@ -74,7 +74,7 @@ export class UserController {
   @Put('update')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
-  updateUser(@Query() query: QueryDto, @Body() user: UserDto) {
+  updateUser(@Query() query: QueryDto, @Body() user: UserUpdateDto) {
     return this.userService.updateUser(query, user);
   }
 
@@ -106,7 +106,7 @@ export class UserController {
     return this.userService.updateUserLived(query, lived);
   }
 
-  @Put('remove')
+  @Delete('remove')
   @HttpCode(HttpStatus.OK)
   @Roles(ERole.STAFF, ERole.LEADER, ERole.MANAGER)
   @UseGuards(JwtGuard, RoleGuard)
@@ -120,5 +120,13 @@ export class UserController {
   @UseGuards(JwtGuard, RoleGuard)
   removeUsersPermanent(@Query() query: QueryDto) {
     return this.userService.removeUsersPermanent(query);
+  }
+
+  @Post('restore')
+  @HttpCode(HttpStatus.OK)
+  @Roles(ERole.LEADER, ERole.MANAGER)
+  @UseGuards(JwtGuard, RoleGuard)
+  restoreUsers() {
+    return this.userService.restoreUsers()
   }
 }

@@ -33,6 +33,17 @@ export class UserDto {
   role: ERole;
 }
 
+export class UserUpdateDto {
+  @IsNotEmpty()
+  firstName: string;
+
+  @IsNotEmpty()
+  lastName: string;
+
+  @IsNotEmpty()
+  role: ERole;
+}
+
 export class UserInfoDto {
   @IsOptional()
   email: string;

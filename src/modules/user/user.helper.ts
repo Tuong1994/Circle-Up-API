@@ -7,6 +7,8 @@ import { UserWithPayload } from './user.type';
 export class UserHelper {
   constructor(private prisma: PrismaService) {}
 
+  private isNotDelete = { isDelete: { equals: false } };
+
   getUserFields(): Prisma.UserSelect {
     return {
       id: true,
@@ -19,11 +21,11 @@ export class UserHelper {
   }
 
   getUserEmailFields(): Prisma.UserEmailSelect {
-    return { email: true, audience: true };
+    return { id: true, email: true, audience: true };
   }
 
   getUserInfoFields(): Prisma.UserInfoSelect {
-    return { content: true, type: true, audience: true };
+    return { id: true, content: true, type: true, audience: true };
   }
 
   getUserWorkFields(): Prisma.UserWorkSelect {
@@ -49,45 +51,82 @@ export class UserHelper {
   }
 
   getUserLivedFields(): Prisma.UserLivedSelect {
-    return { cityCode: true, districtCode: true, audience: true };
+    return { id: true, cityCode: true, districtCode: true, audience: true };
   }
 
   getDateRangeFields(): Prisma.DateRangeSelect {
     return {
+      id: true,
       year: true,
       month: true,
       date: true,
     };
   }
 
-  async handleRemoveUserInfos(user: UserWithPayload) {
-    await this.prisma.userInfo.updateMany({ where: { userId: user.id }, data: { isDelete: true } });
+  getTimePeriodSelection() {
+    return {
+      where: this.isNotDelete,
+      select: {
+        startDate: { where: this.isNotDelete, select: { ...this.getDateRangeFields() } },
+        endDate: { where: this.isNotDelete, select: { ...this.getDateRangeFields() } },
+      },
+    };
   }
 
-  async handleRemoveUserLived(user: UserWithPayload) {
-    await this.prisma.userLived.update({ where: { userId: user.id }, data: { isDelete: true } });
+  getAccountSelection() {
+    return { where: this.isNotDelete, select: { ...this.getUserEmailFields() } };
   }
 
-  async handleRemoveUserWorks(user: UserWithPayload) {
+  getInfoSelection() {
+    return { where: this.isNotDelete, select: { ...this.getUserInfoFields() } };
+  }
+
+  getWorkSelection() {
+    return {
+      where: this.isNotDelete,
+      select: { ...this.getUserWorkFields(), timePeriod: { ...this.getTimePeriodSelection() } },
+    };
+  }
+
+  getEducationSelection() {
+    return {
+      where: this.isNotDelete,
+      select: { ...this.getUserEducationFields(), timePeriod: { ...this.getTimePeriodSelection() } },
+    };
+  }
+
+  getLivedSelection() {
+    return { where: this.isNotDelete, select: { ...this.getUserLivedFields() } };
+  }
+
+  async handleUpdateIsDeleteUserInfos(user: UserWithPayload, isDelete: boolean) {
+    await this.prisma.userInfo.updateMany({ where: { userId: user.id }, data: { isDelete } });
+  }
+
+  async handleUpdateIsDeleteUserLived(user: UserWithPayload, isDelete: boolean) {
+    await this.prisma.userLived.update({ where: { userId: user.id }, data: { isDelete } });
+  }
+
+  async handleUpdateIsDeleteUserWorks(user: UserWithPayload, isDelete: boolean) {
     await Promise.all(
       user.works.map(async (work) => {
         const timePeriod = await this.prisma.timePeriod.findUnique({ where: { userWorkId: work.id } });
         await this.prisma.dateRange.update({
           where: { startDateId: timePeriod.id },
-          data: { isDelete: true },
+          data: { isDelete },
         });
         await this.prisma.dateRange.update({
           where: { endDateId: timePeriod.id },
-          data: { isDelete: true },
+          data: { isDelete },
         });
         await this.prisma.userWork.update({
           where: { id: work.id },
           data: {
-            isDelete: true,
+            isDelete,
             timePeriod: {
               update: {
                 where: { userWorkId: work.id },
-                data: { isDelete: true },
+                data: { isDelete },
               },
             },
           },
@@ -96,7 +135,7 @@ export class UserHelper {
     );
   }
 
-  async handleRemoveUserEducations(user: UserWithPayload) {
+  async handleUpdateIsDeleteUserEducations(user: UserWithPayload, isDelete: boolean) {
     await Promise.all(
       user.educations.map(async (education) => {
         const timePeriod = await this.prisma.timePeriod.findUnique({
@@ -104,20 +143,20 @@ export class UserHelper {
         });
         await this.prisma.dateRange.update({
           where: { startDateId: timePeriod.id },
-          data: { isDelete: true },
+          data: { isDelete },
         });
         await this.prisma.dateRange.update({
           where: { endDateId: timePeriod.id },
-          data: { isDelete: true },
+          data: { isDelete },
         });
         await this.prisma.userEducation.update({
           where: { id: education.id },
           data: {
-            isDelete: true,
+            isDelete,
             timePeriod: {
               update: {
                 where: { userEducationId: education.id },
-                data: { isDelete: true },
+                data: { isDelete },
               },
             },
           },
