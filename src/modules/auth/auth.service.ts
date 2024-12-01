@@ -30,6 +30,7 @@ export class AuthService {
     const isAuth = bcryptjs.compareSync(password, isRegistered.user.password);
     if (!isAuth) throw new ForbiddenException('Password is not correct');
     const data = {
+      id: isRegistered.user.id,
       email: isRegistered.email,
       firstName: isRegistered.user.firstName,
       lastName: isRegistered.user.lastName,
@@ -66,6 +67,7 @@ export class AuthService {
     await this.prisma.userEmail.create({
       data: { email, userId: register.id, audience: EAudience.PUBLIC, isDelete: false },
     });
+    delete register.password;
     return register;
   }
 

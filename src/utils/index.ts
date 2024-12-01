@@ -116,7 +116,7 @@ const utils = {
   },
 
   filterByKeywords: (value: string, keywords: string) => {
-    return value.toLowerCase().includes(keywords);
+    return value.toLowerCase().includes(keywords.toLowerCase());
   },
 };
 

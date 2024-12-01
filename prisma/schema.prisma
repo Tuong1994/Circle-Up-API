@@ -116,10 +116,10 @@ model TimePeriod {
   updatedAt       DateTime      @updatedAt
   startDate       DateRange?    @relation(name: "startDate")
   endDate         DateRange?    @relation(name: "endDate")
-  userWorkId      String        @unique
-  userWork        UserWork      @relation(fields: [userWorkId], references: [id], onDelete: Cascade)
-  userEducationId String        @unique
-  userEducation   UserEducation @relation(fields: [userEducationId], references: [id], onDelete: Cascade)
+  userWorkId      String?        @unique
+  userWork        UserWork?      @relation(fields: [userWorkId], references: [id], onDelete: Cascade)
+  userEducationId String?        @unique
+  userEducation   UserEducation? @relation(fields: [userEducationId], references: [id], onDelete: Cascade)
 }
 
 model DateRange {
@@ -130,10 +130,10 @@ model DateRange {
   isDelete    Boolean?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  startDateId String     @unique
-  startDate   TimePeriod @relation("startDate", fields: [startDateId], references: [id], onDelete: Cascade)
-  endDateId   String     @unique
-  endDate     TimePeriod @relation("endDate", fields: [endDateId], references: [id], onDelete: Cascade)
+  startDateId String?     @unique
+  startDate   TimePeriod? @relation("startDate", fields: [startDateId], references: [id], onDelete: Cascade)
+  endDateId   String?     @unique
+  endDate     TimePeriod? @relation("endDate", fields: [endDateId], references: [id], onDelete: Cascade)
 }
 
 model Permission {

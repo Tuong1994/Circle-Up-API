@@ -7,24 +7,15 @@ import { UserDto, UserEducationDto, UserInfoDto, UserLivedDto, UserWorkDto } fro
 import { EAudience } from 'src/common/enum/base';
 import { EUserInfoType } from './user.enum';
 import { UserEmail, UserInfo } from '@prisma/client';
+import { UserHelper } from './user.helper';
 import utils from 'src/utils';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
-
-  private getRecordFields() {
-    return {
-      id: true,
-      firstName: true,
-      lastName: true,
-      role: true,
-      resetToken: true,
-      resetTokenExpires: true,
-      infos: true,
-      account: true,
-    };
-  }
+  constructor(
+    private prisma: PrismaService,
+    private userHelper: UserHelper,
+  ) {}
 
   async getUsers(query: QueryDto) {
     const { page, limit, keywords, sortBy } = query;
@@ -32,7 +23,11 @@ export class UserService {
     const users = await this.prisma.user.findMany({
       where: { isDelete: { equals: false } },
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
-      select: { ...this.getRecordFields() },
+      select: {
+        ...this.userHelper.getUserFields(),
+        account: { select: { ...this.userHelper.getUserEmailFields() } },
+        infos: { select: { ...this.userHelper.getUserInfoFields() } },
+      },
     });
     if (keywords) {
       const filterUsers = users.filter(
@@ -50,7 +45,34 @@ export class UserService {
     const { userId } = query;
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { ...this.getRecordFields(), works: true, educations: true, lived: true },
+      select: {
+        ...this.userHelper.getUserFields(),
+        account: { select: { ...this.userHelper.getUserEmailFields() } },
+        infos: { select: { ...this.userHelper.getUserInfoFields() } },
+        works: {
+          select: {
+            ...this.userHelper.getUserWorkFields(),
+            timePeriod: {
+              select: {
+                startDate: { select: { ...this.userHelper.getDateRangeFields() } },
+                endDate: { select: { ...this.userHelper.getDateRangeFields() } },
+              },
+            },
+          },
+        },
+        educations: {
+          select: {
+            ...this.userHelper.getUserEducationFields(),
+            timePeriod: {
+              select: {
+                startDate: { select: { ...this.userHelper.getDateRangeFields() } },
+                endDate: { select: { ...this.userHelper.getDateRangeFields() } },
+              },
+            },
+          },
+        },
+        lived: { select: { ...this.userHelper.getUserLivedFields() } },
+      },
     });
     return user;
   }
@@ -88,15 +110,16 @@ export class UserService {
     const newWork = await this.prisma.userWork.create({
       data: { company, position, cityCode, description, isCurrently, audience, userId, isDelete: false },
     });
+    if (!newWork) throw new HttpException('Something wrong', HttpStatus.INTERNAL_SERVER_ERROR);
     const newTimePeriod = await this.prisma.timePeriod.create({
-      data: { userWorkId: newWork.id, userEducationId: null, isDelete: false },
+      data: { userWorkId: newWork.id, isDelete: false },
     });
     await this.prisma.dateRange.create({
-      data: { ...startDate, startDateId: newTimePeriod.id, endDateId: null, isDelete: false },
+      data: { ...startDate, startDateId: newTimePeriod.id, isDelete: false },
     });
     if (!newWork.isCurrently) {
       await this.prisma.dateRange.create({
-        data: { ...endDate, startDateId: null, endDateId: newTimePeriod.id, isDelete: false },
+        data: { ...endDate, endDateId: newTimePeriod.id, isDelete: false },
       });
     }
     return newWork;
@@ -108,14 +131,14 @@ export class UserService {
       data: { school, description, isGraduated, audience, userId, isDelete: false },
     });
     const newTimePeriod = await this.prisma.timePeriod.create({
-      data: { userWorkId: newEducation.id, userEducationId: null, isDelete: false },
+      data: { userEducationId: newEducation.id, isDelete: false },
     });
     await this.prisma.dateRange.create({
-      data: { ...startDate, startDateId: newTimePeriod.id, endDateId: null, isDelete: false },
+      data: { ...startDate, startDateId: newTimePeriod.id, isDelete: false },
     });
     if (!newEducation.isGraduated) {
       await this.prisma.dateRange.create({
-        data: { ...endDate, startDateId: null, endDateId: newTimePeriod.id, isDelete: false },
+        data: { ...endDate, endDateId: newTimePeriod.id, isDelete: false },
       });
     }
     return newEducation;
@@ -155,7 +178,14 @@ export class UserService {
       data: { company, position, cityCode, description, audience, isCurrently, userId },
     });
     await this.prisma.dateRange.update({ where: { id: startDate.id }, data: { ...startDate } });
-    if (!isCurrently) await this.prisma.dateRange.update({ where: { id: endDate.id }, data: { ...endDate } });
+    if (!isCurrently) {
+      const userWork = await this.prisma.userWork.findUnique({
+        where: { id: userWorkId },
+        select: { timePeriod: { select: { endDate: true } } },
+      });
+      if (!userWork.timePeriod.endDate) await this.prisma.dateRange.create({ data: { ...endDate } });
+      else await this.prisma.dateRange.update({ where: { id: endDate.id }, data: { ...endDate } });
+    }
     throw new HttpException('Updated success', HttpStatus.OK);
   }
 
@@ -167,7 +197,14 @@ export class UserService {
       data: { school, description, audience, isGraduated, userId },
     });
     await this.prisma.dateRange.update({ where: { id: startDate.id }, data: { ...startDate } });
-    if (!isGraduated) await this.prisma.dateRange.update({ where: { id: endDate.id }, data: { ...endDate } });
+    if (!isGraduated) {
+      const userEducation = await this.prisma.userEducation.findUnique({
+        where: { id: userEducationId },
+        select: { timePeriod: { select: { endDate: true } } },
+      });
+      if (!userEducation.timePeriod.endDate) await this.prisma.dateRange.create({ data: { ...endDate } });
+      else await this.prisma.dateRange.update({ where: { id: endDate.id }, data: { ...endDate } });
+    }
     throw new HttpException('Updated success', HttpStatus.OK);
   }
 
@@ -193,21 +230,10 @@ export class UserService {
     await Promise.all(
       users.map(async (user) => {
         await this.prisma.userEmail.update({ where: { userId: user.id }, data: { isDelete: true } });
-        if (user.infos.length > 0) {
-          await this.prisma.userInfo.updateMany({ where: { userId: user.id }, data: { isDelete: true } });
-        }
-        if (user.works.length > 0) {
-          await this.prisma.userWork.updateMany({ where: { userId: user.id }, data: { isDelete: true } });
-        }
-        if (user.educations.length > 0) {
-          await this.prisma.userEducation.updateMany({
-            where: { userId: user.id },
-            data: { isDelete: true },
-          });
-        }
-        if (user.lived) {
-          await this.prisma.userLived.update({ where: { userId: user.id }, data: { isDelete: true } });
-        }
+        if (user.lived) await this.userHelper.handleRemoveUserLived(user);
+        if (user.infos.length > 0) await this.userHelper.handleRemoveUserInfos(user);
+        if (user.works.length > 0) await this.userHelper.handleRemoveUserWorks(user);
+        if (user.educations.length > 0) await this.userHelper.handleRemoveUserEducations(user);
       }),
     );
     throw new HttpException('Removed success', HttpStatus.OK);
@@ -223,5 +249,16 @@ export class UserService {
     if (users && !users.length) throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
     await this.prisma.user.deleteMany({ where: { id: { in: listIds } } });
     throw new HttpException('Removed success', HttpStatus.OK);
+  }
+
+  async restoreUsers() {
+    const users = await this.prisma.user.findMany({ where: { isDelete: { equals: true } } });
+    if (users && !users.length) throw new HttpException('No data to restored', HttpStatus.OK);
+    await Promise.all(
+      users.map(async (user) => {
+        await this.prisma.user.update({ where: { id: user.id }, data: { isDelete: false } });
+      }),
+    );
+    throw new HttpException('Restored success', HttpStatus.OK);
   }
 }

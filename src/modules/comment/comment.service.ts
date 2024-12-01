@@ -15,7 +15,7 @@ export class CommentService {
     let collection: List<Comment> = utils.defaultList();
     const comments = await this.prisma.comment.findMany({
       where: { AND: [{ postId }, { isDelete: { equals: false } }] },
-      include: { user: { select: { fullName: true, image: true } } },
+      include: { user: { select: { firstName: true, lastName: true } } },
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
     });
     if (comments && comments.length > 0) {
@@ -33,8 +33,7 @@ export class CommentService {
       where: { userId, isDelete: { equals: false } },
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
     });
-    if (comments && comments.length > 0)
-      collection = utils.paging<Comment>(comments, page, limit);
+    if (comments && comments.length > 0) collection = utils.paging<Comment>(comments, page, limit);
     return collection;
   }
 
@@ -70,8 +69,7 @@ export class CommentService {
     const comments = await this.prisma.comment.findMany({
       where: { id: { in: listIds } },
     });
-    if (comments && !comments.length)
-      throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
+    if (comments && !comments.length) throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
     await this.prisma.comment.updateMany({
       where: { id: { in: listIds } },
       data: { isDelete: true },
@@ -85,8 +83,7 @@ export class CommentService {
     const comments = await this.prisma.comment.findMany({
       where: { id: { in: listIds } },
     });
-    if (comments && !comments.length)
-      throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
+    if (comments && !comments.length) throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
     await this.prisma.comment.deleteMany({ where: { id: { in: listIds } } });
     throw new HttpException('Removed success', HttpStatus.OK);
   }
@@ -95,8 +92,7 @@ export class CommentService {
     const comments = await this.prisma.comment.findMany({
       where: { isDelete: { equals: true } },
     });
-    if (comments && !comments.length)
-      throw new HttpException('There are no data to restored', HttpStatus.OK);
+    if (comments && !comments.length) throw new HttpException('There are no data to restored', HttpStatus.OK);
     await Promise.all(
       comments.map(async (comment) => {
         await this.prisma.comment.update({

@@ -96,8 +96,8 @@ CREATE TABLE `TimePeriod` (
     `isDelete` BOOLEAN NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
-    `userWorkId` VARCHAR(191) NOT NULL,
-    `userEducationId` VARCHAR(191) NOT NULL,
+    `userWorkId` VARCHAR(191) NULL,
+    `userEducationId` VARCHAR(191) NULL,
 
     UNIQUE INDEX `TimePeriod_userWorkId_key`(`userWorkId`),
     UNIQUE INDEX `TimePeriod_userEducationId_key`(`userEducationId`),
@@ -113,8 +113,8 @@ CREATE TABLE `DateRange` (
     `isDelete` BOOLEAN NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
-    `startDateId` VARCHAR(191) NOT NULL,
-    `endDateId` VARCHAR(191) NOT NULL,
+    `startDateId` VARCHAR(191) NULL,
+    `endDateId` VARCHAR(191) NULL,
 
     UNIQUE INDEX `DateRange_startDateId_key`(`startDateId`),
     UNIQUE INDEX `DateRange_endDateId_key`(`endDateId`),
@@ -167,8 +167,8 @@ CREATE TABLE `Friend` (
 CREATE TABLE `Post` (
     `id` VARCHAR(191) NOT NULL,
     `content` VARCHAR(191) NOT NULL,
-    `cityCode` INTEGER NOT NULL,
-    `feeling` INTEGER NOT NULL,
+    `cityCode` INTEGER NULL,
+    `feeling` INTEGER NULL,
     `audience` INTEGER NOT NULL,
     `isDelete` BOOLEAN NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),

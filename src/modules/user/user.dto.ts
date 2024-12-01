@@ -34,7 +34,7 @@ export class UserDto {
 }
 
 export class UserInfoDto {
-  @IsNotEmpty()
+  @IsOptional()
   email: string;
 
   @IsNotEmpty()
