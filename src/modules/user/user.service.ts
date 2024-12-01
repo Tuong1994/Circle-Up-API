@@ -17,16 +17,18 @@ export class UserService {
     private userHelper: UserHelper,
   ) {}
 
+  private isNotDelete = { isDelete: { equals: false } };
+
   async getUsers(query: QueryDto) {
     const { page, limit, keywords, sortBy } = query;
     let collection: Paging<UserResponse> = utils.defaultCollection();
     const users = await this.prisma.user.findMany({
-      where: { isDelete: { equals: false } },
+      where: this.isNotDelete,
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
       select: {
         ...this.userHelper.getUserFields(),
-        account: { select: { ...this.userHelper.getUserEmailFields() } },
-        infos: { select: { ...this.userHelper.getUserInfoFields() } },
+        account: { where: this.isNotDelete, select: { ...this.userHelper.getUserEmailFields() } },
+        infos: { where: this.isNotDelete, select: { ...this.userHelper.getUserInfoFields() } },
       },
     });
     if (keywords) {
