@@ -38,13 +38,13 @@ const utils = {
   },
 
   generateFile: (result: UploadApiResponse, option?: MediaOption, type = EMediaType.IMAGE) => {
-    const defaultFile: Pick<Media, 'path' | 'size' | 'publicId'> = {
+    const defaultProps: Pick<Media, 'path' | 'size' | 'publicId'> = {
       path: '',
       size: 0,
       publicId: '',
     };
     return {
-      ...defaultFile,
+      ...defaultProps,
       ...option,
       type,
       path: result.secure_url,

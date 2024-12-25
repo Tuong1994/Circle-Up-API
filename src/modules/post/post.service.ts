@@ -45,6 +45,16 @@ export class PostService {
   }
 
   async creatPost(files: Express.Multer.File[], post: PostDto) {
-    const {} = post;
+    const { content, feeling, cityCode, audience, userId } = post;
+    const newPost = await this.prisma.post.create({
+      data: { content, feeling, cityCode, audience, userId },
+      select: { ...this.postHelper.getPostFields() },
+    });
+    if (!files) return newPost;
+    if (Array.isArray(files) && files.length > 0) {
+      const medias = await Promise.all(files.map(async (file) => {
+        
+      }));
+    }
   }
 }
