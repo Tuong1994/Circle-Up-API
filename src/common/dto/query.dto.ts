@@ -1,4 +1,4 @@
-import { ELang, ERole } from '../enum/base';
+import { ELang, EMediaType, ERole } from '../enum/base';
 
 export class QueryDto {
   page?: string;
@@ -32,4 +32,5 @@ export class QueryDto {
 
   role?: ERole;
   langCode?: ELang;
+  fileType?: EMediaType;
 }

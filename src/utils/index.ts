@@ -1,5 +1,6 @@
 import * as bcryptjs from 'bcryptjs';
 import * as fs from 'fs';
+import * as crypto from 'crypto';
 import { Media, Prisma } from '@prisma/client';
 import { UploadApiResponse } from 'cloudinary';
 import { ELang, EMediaType, ESort } from '../common/enum/base';
@@ -37,7 +38,13 @@ const utils = {
     return { totalItems: 0, items: [] };
   },
 
-  generateFile: (result: UploadApiResponse, option?: MediaOption, type = EMediaType.IMAGE) => {
+  generateFileHash(file: Express.Multer.File): string {
+    const hash = crypto.createHash('sha256');
+    hash.update(file.buffer);
+    return hash.digest('hex'); // Returns the file hash as a string
+  },
+
+  generateFile: (result: UploadApiResponse, type = EMediaType.IMAGE, option?: MediaOption) => {
     const defaultProps: Pick<Media, 'path' | 'size' | 'publicId'> = {
       path: '',
       size: 0,
