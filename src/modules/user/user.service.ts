@@ -226,10 +226,7 @@ export class UserService {
   async removeUsersPermanent(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
-    const users = await this.prisma.user.findMany({
-      where: { id: { in: listIds } },
-      select: { medias: true },
-    });
+    const users = await this.prisma.user.findMany({ where: { id: { in: listIds } } });
     if (users && !users.length) throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
     await this.prisma.user.deleteMany({ where: { id: { in: listIds } } });
     throw new HttpException('Removed success', HttpStatus.OK);
@@ -240,7 +237,7 @@ export class UserService {
       where: { isDelete: { equals: true } },
       select: { id: true, infos: true, account: true, works: true, educations: true, lived: true },
     });
-    if (users && !users.length) throw new HttpException('No data to restored', HttpStatus.OK);
+    if (users && !users.length) throw new HttpException('No data to restore', HttpStatus.OK);
     await Promise.all(
       users.map(async (user) => {
         await this.prisma.user.update({ where: { id: user.id }, data: { isDelete: false } });

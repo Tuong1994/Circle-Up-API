@@ -86,8 +86,67 @@ export class PostService {
       where: { id: postId },
       data: { content, feeling, cityCode, audience, userId },
     });
-    if (!files) throw new HttpException('Updated success', HttpStatus.OK);
-    if (Array.isArray(files) && files.length > 0) {
-    }
+    if (!files || !files.length) throw new HttpException('Updated success', HttpStatus.OK);
+    await Promise.all(
+      files.map(async (file) => {
+        const { existMedia, fileHash } = await this.postHelper.getExistedMedia(file);
+        if (existMedia) return;
+        const result = await this.cloudinary.upload(utils.getFileUrl(file));
+        const generateFile = utils.generateFile(result, {
+          postId,
+          type: fileType,
+          hash: fileHash,
+        });
+        await this.prisma.media.create({ data: generateFile });
+      }),
+    );
+    throw new HttpException('Updated success', HttpStatus.OK);
+  }
+
+  async removePosts(query: QueryDto) {
+    const { ids } = query;
+    const listIds = ids.split(',');
+    const posts = await this.prisma.post.findMany({
+      where: { id: { in: listIds } },
+      select: { id: true, medias: true, comments: true, likes: true, tags: true, followers: true },
+    });
+    if (posts && !posts.length) throw new HttpException('Posts not found', HttpStatus.NOT_FOUND);
+    await this.prisma.post.updateMany({ where: { id: { in: listIds } }, data: { isDelete: true } });
+    await Promise.all(
+      posts.map(async (post) => {
+        if (post.comments.length > 0) await this.postHelper.handleUpdateIsDeletePostComments(post, true);
+        if (post.followers.length > 0) await this.postHelper.handleUpdateIsDeletePostFollowers(post, true);
+        if (post.likes.length > 0) await this.postHelper.handleUpdateIsDeletePostLikes(post, true);
+        if (post.medias.length > 0) await this.postHelper.handleUpdateIsDeletePostMedias(post, true);
+      }),
+    );
+    throw new HttpException('Removed success', HttpStatus.OK);
+  }
+
+  async removePostsPermanent(query: QueryDto) {
+    const { ids } = query;
+    const listIds = ids.split(',');
+    const posts = await this.prisma.post.findMany({ where: { id: { in: listIds } } });
+    if (posts && !posts.length) throw new HttpException('Posts not found', HttpStatus.NOT_FOUND);
+    await this.prisma.post.deleteMany({ where: { id: { in: listIds } } });
+    throw new HttpException('Removed success', HttpStatus.OK);
+  }
+
+  async restorePosts() {
+    const posts = await this.prisma.post.findMany({
+      where: { isDelete: { equals: true } },
+      select: { id: true, medias: true, comments: true, likes: true, tags: true, followers: true },
+    });
+    if (posts && !posts.length) throw new HttpException('No data to restore', HttpStatus.OK);
+    await Promise.all(
+      posts.map(async (post) => {
+        await this.prisma.post.update({ where: { id: post.id }, data: { isDelete: false } });
+        if (post.comments.length > 0) await this.postHelper.handleUpdateIsDeletePostComments(post, false);
+        if (post.followers.length > 0) await this.postHelper.handleUpdateIsDeletePostFollowers(post, false);
+        if (post.likes.length > 0) await this.postHelper.handleUpdateIsDeletePostLikes(post, false);
+        if (post.medias.length > 0) await this.postHelper.handleUpdateIsDeletePostMedias(post, false);
+      }),
+    );
+    throw new HttpException('Restored success', HttpStatus.OK);
   }
 }

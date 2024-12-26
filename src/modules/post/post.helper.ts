@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import utils from '../../utils';
+import { PostWithPayload } from './post.type';
 
 @Injectable()
 export class PostHelper {
@@ -43,5 +44,21 @@ export class PostHelper {
       select: { ...this.getPostMediaFields() },
     });
     return { fileHash, existMedia };
+  }
+
+  async handleUpdateIsDeletePostComments(post: PostWithPayload, isDelete: boolean) {
+    await this.prisma.comment.updateMany({ where: { postId: post.id }, data: { isDelete } });
+  }
+
+  async handleUpdateIsDeletePostLikes(post: PostWithPayload, isDelete: boolean) {
+    await this.prisma.like.updateMany({ where: { postId: post.id }, data: { isDelete } });
+  }
+
+  async handleUpdateIsDeletePostFollowers(post: PostWithPayload, isDelete: boolean) {
+    await this.prisma.follow.updateMany({ where: { postId: post.id }, data: { isDelete } });
+  }
+
+  async handleUpdateIsDeletePostMedias(post: PostWithPayload, isDelete: boolean) {
+    await this.prisma.media.updateMany({ where: { postId: post.id }, data: { isDelete } });
   }
 }

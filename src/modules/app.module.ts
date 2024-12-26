@@ -11,6 +11,7 @@ import { WardModule } from './ward/ward.module';
 import { LikeModule } from './like/like.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { PostModule } from './post/post.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UserModule } from './user/user.module';
     EmailModule,
     AuthModule,
     UserModule,
+    PostModule,
     CommentModule,
     LikeModule,
     CityModule,
