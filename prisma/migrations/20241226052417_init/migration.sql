@@ -260,12 +260,14 @@ CREATE TABLE `Media` (
     `size` INTEGER NOT NULL,
     `publicId` VARCHAR(191) NOT NULL,
     `type` VARCHAR(191) NOT NULL,
+    `hash` VARCHAR(191) NOT NULL,
     `isDelete` BOOLEAN NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userId` VARCHAR(191) NULL,
     `postId` VARCHAR(191) NULL,
 
+    UNIQUE INDEX `Media_hash_key`(`hash`),
     UNIQUE INDEX `Media_userId_key`(`userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

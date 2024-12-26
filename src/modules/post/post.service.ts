@@ -6,7 +6,7 @@ import { Post } from '@prisma/client';
 import { PostHelper } from './post.helper';
 import { PostDto } from './post.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import utils from 'src/utils';
+import utils from '../../utils';
 
 @Injectable()
 export class PostService {
@@ -53,27 +53,30 @@ export class PostService {
       data: { content, feeling, cityCode, audience, userId, isDelete: false },
       select: { ...this.postHelper.getPostFields() },
     });
-    if (!files) return newPost;
-    if (Array.isArray(files) && files.length > 0) {
-      const medias = await Promise.all(
-        files.map(async (file) => {
-          const result = await this.cloudinary.upload(utils.getFileUrl(file));
-          const generateFile = utils.generateFile(result, fileType, { postId: newPost.id });
-          return generateFile;
-        }),
-      );
-      await this.prisma.media.createMany({ data: medias });
-      const postWithMedia = await this.prisma.post.findUnique({
-        where: { id: newPost.id },
-        select: {
-          ...this.postHelper.getPostFields(),
-          medias: {
-            select: { ...this.postHelper.getPostMediaFields() },
-          },
+    if (!files || !files.length) return newPost;
+    await Promise.all(
+      files.map(async (file) => {
+        const { existMedia, fileHash } = await this.postHelper.getExistedMedia(file);
+        if (existMedia) return;
+        const result = await this.cloudinary.upload(utils.getFileUrl(file));
+        const generateFile = utils.generateFile(result, {
+          postId: newPost.id,
+          type: fileType,
+          hash: fileHash,
+        });
+        await this.prisma.media.create({ data: generateFile });
+      }),
+    );
+    const postWithMedia = await this.prisma.post.findUnique({
+      where: { id: newPost.id },
+      select: {
+        ...this.postHelper.getPostFields(),
+        medias: {
+          select: { ...this.postHelper.getPostMediaFields() },
         },
-      });
-      return postWithMedia;
-    }
+      },
+    });
+    return postWithMedia;
   }
 
   async updatePost(query: QueryDto, files: Express.Multer.File[], post: PostDto) {

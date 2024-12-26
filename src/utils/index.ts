@@ -6,7 +6,9 @@ import { UploadApiResponse } from 'cloudinary';
 import { ELang, EMediaType, ESort } from '../common/enum/base';
 import { Lang, en, vn } from '../common/lang';
 
-type MediaOption = {
+type FileExtraData = {
+  hash: string;
+  type: EMediaType;
   userId?: string;
   postId?: string;
 };
@@ -44,7 +46,7 @@ const utils = {
     return hash.digest('hex'); // Returns the file hash as a string
   },
 
-  generateFile: (result: UploadApiResponse, type = EMediaType.IMAGE, option?: MediaOption) => {
+  generateFile: (result: UploadApiResponse, extraData: FileExtraData) => {
     const defaultProps: Pick<Media, 'path' | 'size' | 'publicId'> = {
       path: '',
       size: 0,
@@ -52,8 +54,7 @@ const utils = {
     };
     return {
       ...defaultProps,
-      ...option,
-      type,
+      ...extraData,
       path: result.secure_url,
       size: result.bytes,
       publicId: result.public_id,

@@ -110,12 +110,12 @@ model UserLived {
 }
 
 model TimePeriod {
-  id              String        @id @default(uuid())
+  id              String         @id @default(uuid())
   isDelete        Boolean?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  startDate       DateRange?    @relation(name: "startDate")
-  endDate         DateRange?    @relation(name: "endDate")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  startDate       DateRange?     @relation(name: "startDate")
+  endDate         DateRange?     @relation(name: "endDate")
   userWorkId      String?        @unique
   userWork        UserWork?      @relation(fields: [userWorkId], references: [id], onDelete: Cascade)
   userEducationId String?        @unique
@@ -123,13 +123,13 @@ model TimePeriod {
 }
 
 model DateRange {
-  id          String     @id @default(uuid())
+  id          String      @id @default(uuid())
   year        Int
   month       Int
   date        Int
   isDelete    Boolean?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   startDateId String?     @unique
   startDate   TimePeriod? @relation("startDate", fields: [startDateId], references: [id], onDelete: Cascade)
   endDateId   String?     @unique
@@ -266,6 +266,7 @@ model Media {
   size      Int
   publicId  String
   type      String
+  hash      String   @unique
   isDelete  Boolean?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
