@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -44,7 +45,7 @@ export class PostController {
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtGuard)
   @UseInterceptors(FilesInterceptor('medias', 5, multerOption()))
-  createPost(@Query() query: QueryDto, @UploadedFiles() files: Express.Multer.File[], post: PostDto) {
+  createPost(@Query() query: QueryDto, @UploadedFiles() files: Express.Multer.File[], @Body() post: PostDto) {
     return this.postService.creatPost(query, files, post);
   }
 
@@ -52,7 +53,7 @@ export class PostController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
   @UseInterceptors(FilesInterceptor('medias', 5, multerOption()))
-  updatePost(@Query() query: QueryDto, @UploadedFiles() files: Express.Multer.File[], post: PostDto) {
+  updatePost(@Query() query: QueryDto, @UploadedFiles() files: Express.Multer.File[], @Body() post: PostDto) {
     return this.postService.updatePost(query, files, post);
   }
 

@@ -21,11 +21,12 @@ export class PostService {
   async getPosts(query: QueryDto) {
     const { page, limit, sortBy } = query;
     const posts = await this.prisma.post.findMany({
-      where: this.isNotDelete,
+      where: { AND: [{ ...this.isNotDelete }] },
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
       select: {
         ...this.postHelper.getPostFields(),
         user: { select: { ...this.postHelper.getPostUserFields() } },
+        tags: { select: { ...this.postHelper.getPostTagFields() } },
         medias: { where: this.isNotDelete, select: { ...this.postHelper.getPostMediaFields() } },
       },
     });
@@ -40,6 +41,7 @@ export class PostService {
       select: {
         ...this.postHelper.getPostFields(),
         user: { select: { ...this.postHelper.getPostUserFields() } },
+        tags: { select: { ...this.postHelper.getPostTagFields() } },
         medias: { where: this.isNotDelete, select: { ...this.postHelper.getPostMediaFields() } },
       },
     });
@@ -50,7 +52,14 @@ export class PostService {
     const { fileType } = query;
     const { content, feeling, cityCode, audience, userId } = post;
     const newPost = await this.prisma.post.create({
-      data: { content, feeling, cityCode, audience, userId, isDelete: false },
+      data: {
+        content,
+        userId,
+        feeling: Number(feeling),
+        cityCode: Number(cityCode),
+        audience: Number(audience),
+        isDelete: false,
+      },
       select: { ...this.postHelper.getPostFields() },
     });
     if (!files || !files.length) return newPost;
@@ -84,7 +93,13 @@ export class PostService {
     const { content, feeling, cityCode, audience, userId } = post;
     await this.prisma.post.update({
       where: { id: postId },
-      data: { content, feeling, cityCode, audience, userId },
+      data: {
+        content,
+        userId,
+        feeling: Number(feeling),
+        cityCode: Number(cityCode),
+        audience: Number(audience),
+      },
     });
     if (!files || !files.length) throw new HttpException('Updated success', HttpStatus.OK);
     await Promise.all(

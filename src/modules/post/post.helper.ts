@@ -37,6 +37,10 @@ export class PostHelper {
     };
   }
 
+  getPostTagFields(): Prisma.PostOnUserSelect {
+    return { userId: true };
+  }
+
   async getExistedMedia(file: Express.Multer.File) {
     const fileHash = utils.generateFileHash(file);
     const existMedia = await this.prisma.media.findUnique({
