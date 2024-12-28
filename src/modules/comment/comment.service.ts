@@ -10,11 +10,13 @@ import utils from 'src/utils';
 export class CommentService {
   constructor(private prisma: PrismaService) {}
 
+  private isNotDelete = { isDelete: { equals: false } };
+
   async getComments(query: QueryDto) {
     const { limit, postId, sortBy } = query;
     let collection: List<Comment> = utils.defaultList();
     const comments = await this.prisma.comment.findMany({
-      where: { AND: [{ postId }, { isDelete: { equals: false } }] },
+      where: { AND: [{ postId }, { ...this.isNotDelete }] },
       include: { user: { select: { firstName: true, lastName: true } } },
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
     });
@@ -27,10 +29,10 @@ export class CommentService {
   }
 
   async getCommentsByUser(query: QueryDto) {
-    const { page, limit, userId, sortBy, langCode } = query;
+    const { page, limit, userId, sortBy } = query;
     let collection: Paging<Comment> = utils.defaultCollection();
     const comments = await this.prisma.comment.findMany({
-      where: { userId, isDelete: { equals: false } },
+      where: { userId, ...this.isNotDelete },
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
     });
     if (comments && comments.length > 0) collection = utils.paging<Comment>(comments, page, limit);
@@ -40,8 +42,9 @@ export class CommentService {
   async getComment(query: QueryDto) {
     const { commentId } = query;
     const comment = await this.prisma.comment.findUnique({
-      where: { id: commentId, isDelete: { equals: false } },
+      where: { id: commentId, ...this.isNotDelete },
     });
+    if (!comment) throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
     return comment;
   }
 

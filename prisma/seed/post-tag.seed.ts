@@ -5,6 +5,7 @@ const postOnUsers: PostOnUser[] = [
     id: 'PU_1',
     userId: 'U_1',
     postId: 'P_1',
+    isDelete: false,
     createdAt: new Date(),
     updatedAt: new Date(),
   },

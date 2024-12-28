@@ -46,7 +46,7 @@ export class UserService {
   async getUser(query: QueryDto) {
     const { userId } = query;
     const user = await this.prisma.user.findUnique({
-      where: { id: userId, isDelete: { equals: false } },
+      where: { id: userId, ...this.isNotDelete },
       select: {
         ...this.userHelper.getUserFields(),
         account: this.userHelper.getAccountSelection(),
@@ -56,18 +56,20 @@ export class UserService {
         lived: this.userHelper.getLivedSelection(),
       },
     });
+    if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     return user;
   }
 
   async createUser(user: UserDto) {
     const { email, password, firstName, lastName, role } = user;
     const hash = utils.bcryptHash(password);
+    const fullName = this.userHelper.getUserFullName(firstName, lastName)
     const newUser = await this.prisma.user.create({
-      data: { password: hash, firstName, lastName, role, isDelete: false },
+      data: { firstName, lastName, fullName, role, isDelete: false },
       select: { ...this.userHelper.getUserFields() },
     });
     const newUserEmail = await this.prisma.userEmail.create({
-      data: { email, userId: newUser.id, isDelete: false, audience: EAudience.PUBLIC },
+      data: { email, password: hash, userId: newUser.id, isDelete: false, audience: EAudience.PUBLIC },
       select: { ...this.userHelper.getUserEmailFields() },
     });
     return { ...newUser, account: { ...newUserEmail } };
@@ -78,7 +80,7 @@ export class UserService {
     let newInfo: UserInfo | UserEmail;
     if (type === EUserInfoType.EMAIL) {
       newInfo = await this.prisma.userEmail.create({
-        data: { email, audience, userId, isDelete: false },
+        data: { email, password: undefined, audience, userId, isDelete: false },
       });
     } else {
       newInfo = await this.prisma.userInfo.create({
@@ -139,7 +141,8 @@ export class UserService {
   async updateUser(query: QueryDto, user: UserUpdateDto) {
     const { userId } = query;
     const { firstName, lastName, role } = user;
-    await this.prisma.user.update({ where: { id: userId }, data: { firstName, lastName, role } });
+    const fullName = this.userHelper.getUserFullName(firstName, lastName)
+    await this.prisma.user.update({ where: { id: userId }, data: { firstName, lastName, fullName, role } });
     throw new HttpException('Updated success', HttpStatus.OK);
   }
 

@@ -21,12 +21,12 @@ export class PostService {
   async getPosts(query: QueryDto) {
     const { page, limit, sortBy } = query;
     const posts = await this.prisma.post.findMany({
-      where: { AND: [{ ...this.isNotDelete }] },
+      where: this.isNotDelete,
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
       select: {
         ...this.postHelper.getPostFields(),
         user: { select: { ...this.postHelper.getPostUserFields() } },
-        tags: { select: { ...this.postHelper.getPostTagFields() } },
+        tags: { where: this.isNotDelete, select: { ...this.postHelper.getPostTagFields() } },
         medias: { where: this.isNotDelete, select: { ...this.postHelper.getPostMediaFields() } },
       },
     });
@@ -45,6 +45,7 @@ export class PostService {
         medias: { where: this.isNotDelete, select: { ...this.postHelper.getPostMediaFields() } },
       },
     });
+    if(!post) throw new HttpException('Post not found', HttpStatus.NOT_FOUND)
     return post;
   }
 
@@ -129,6 +130,7 @@ export class PostService {
     await this.prisma.post.updateMany({ where: { id: { in: listIds } }, data: { isDelete: true } });
     await Promise.all(
       posts.map(async (post) => {
+        if (post.tags.length > 0) await this.postHelper.handleUpdateIsDeletePostTags(post, true);
         if (post.comments.length > 0) await this.postHelper.handleUpdateIsDeletePostComments(post, true);
         if (post.followers.length > 0) await this.postHelper.handleUpdateIsDeletePostFollowers(post, true);
         if (post.likes.length > 0) await this.postHelper.handleUpdateIsDeletePostLikes(post, true);
@@ -156,6 +158,7 @@ export class PostService {
     await Promise.all(
       posts.map(async (post) => {
         await this.prisma.post.update({ where: { id: post.id }, data: { isDelete: false } });
+        if (post.tags.length > 0) await this.postHelper.handleUpdateIsDeletePostTags(post, false);
         if (post.comments.length > 0) await this.postHelper.handleUpdateIsDeletePostComments(post, false);
         if (post.followers.length > 0) await this.postHelper.handleUpdateIsDeletePostFollowers(post, false);
         if (post.likes.length > 0) await this.postHelper.handleUpdateIsDeletePostLikes(post, false);

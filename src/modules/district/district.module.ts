@@ -1,12 +1,13 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { DistrictController } from './district.controller';
 import { DistrictService } from './district.service';
+import { DistrictHelper } from './district.helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { CheckIdMiddleware } from 'src/common/middleware/checkId.middleware';
 
 @Module({
   controllers: [DistrictController],
-  providers: [DistrictService],
+  providers: [DistrictService, DistrictHelper],
 })
 export class DistrictModule implements NestModule {
   constructor(private prisma: PrismaService) {}

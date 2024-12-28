@@ -12,6 +12,7 @@ import { LikeModule } from './like/like.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { PostModule } from './post/post.module';
+import { FollowModule } from './follow/follow.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PostModule } from './post/post.module';
     AuthModule,
     UserModule,
     PostModule,
+    FollowModule,
     CommentModule,
     LikeModule,
     CityModule,

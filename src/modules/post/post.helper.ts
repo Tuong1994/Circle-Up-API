@@ -15,6 +15,8 @@ export class PostHelper {
       audience: true,
       feeling: true,
       cityCode: true,
+      createdAt: true,
+      updatedAt: true,
     };
   }
 
@@ -64,5 +66,9 @@ export class PostHelper {
 
   async handleUpdateIsDeletePostMedias(post: PostWithPayload, isDelete: boolean) {
     await this.prisma.media.updateMany({ where: { postId: post.id }, data: { isDelete } });
+  }
+
+  async handleUpdateIsDeletePostTags(post: PostWithPayload, isDelete: boolean) {
+    await this.prisma.postOnUser.updateMany({ where: { postId: post.id }, data: { isDelete } });
   }
 }

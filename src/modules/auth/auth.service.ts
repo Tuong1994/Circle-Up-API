@@ -27,7 +27,7 @@ export class AuthService {
       include: { user: true },
     });
     if (!isRegistered) throw new HttpException('Email is not correct', HttpStatus.NOT_FOUND);
-    const isAuth = bcryptjs.compareSync(password, isRegistered.user.password);
+    const isAuth = bcryptjs.compareSync(password, isRegistered.password);
     if (!isAuth) throw new ForbiddenException('Password is not correct');
     const data = {
       id: isRegistered.user.id,
@@ -62,12 +62,11 @@ export class AuthService {
     if (isExisted) throw new ForbiddenException('Email is already exist');
     const hash = utils.bcryptHash(password);
     const register = await this.prisma.user.create({
-      data: { password: hash, firstName, lastName, isDelete: false, role: ERole.USER },
+      data: { firstName, lastName, isDelete: false, role: ERole.USER },
     });
     await this.prisma.userEmail.create({
-      data: { email, userId: register.id, audience: EAudience.PUBLIC, isDelete: false },
+      data: { email, password: hash, userId: register.id, audience: EAudience.PUBLIC, isDelete: false },
     });
-    delete register.password;
     return register;
   }
 
@@ -90,12 +89,12 @@ export class AuthService {
   async changePassword(query: QueryDto, auth: AuthChangePasswordDto) {
     const { userId } = query;
     const { oldPassword, newPassword } = auth;
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.userEmail.findUnique({ where: { id: userId } });
     if (!user) throw new ForbiddenException('User not found');
     const isAuth = bcryptjs.compareSync(oldPassword, user.password);
     if (!isAuth) throw new ForbiddenException('Password is not correct');
     const hash = utils.bcryptHash(newPassword);
-    await this.prisma.user.update({ where: { id: userId }, data: { password: hash } });
+    await this.prisma.userEmail.update({ where: { id: userId }, data: { password: hash } });
     throw new HttpException('Password has successfully changed', HttpStatus.OK);
   }
 

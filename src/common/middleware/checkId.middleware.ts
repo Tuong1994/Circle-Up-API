@@ -23,6 +23,8 @@ export class CheckIdMiddleware implements NestMiddleware {
       postId,
       eventId,
       followId,
+      followerId,
+      followedId,
       commentId,
       likeId,
       mediaId,
@@ -41,6 +43,8 @@ export class CheckIdMiddleware implements NestMiddleware {
       !postId &&
       !eventId &&
       !followId &&
+      !followerId &&
+      !followedId &&
       !commentId &&
       !likeId &&
       !mediaId &&
@@ -66,6 +70,8 @@ export class CheckIdMiddleware implements NestMiddleware {
             postId ||
             eventId ||
             followId ||
+            followerId ||
+            followedId ||
             commentId ||
             likeId ||
             mediaId ||

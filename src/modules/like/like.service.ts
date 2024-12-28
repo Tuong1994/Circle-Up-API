@@ -10,11 +10,13 @@ import utils from 'src/utils';
 export class LikeService {
   constructor(private prisma: PrismaService) {}
 
+  private isNotDelete = { isDelete: { equals: false } };
+
   async getLikesPaging(query: QueryDto) {
     const { page, limit, sortBy } = query;
     let collection: Paging<Like> = utils.defaultCollection();
     const likes = await this.prisma.like.findMany({
-      where: { AND: [{ isDelete: { equals: false } }] },
+      where: this.isNotDelete,
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
     });
     if (likes && likes.length > 0) collection = utils.paging<Like>(likes, page, limit);
@@ -24,9 +26,10 @@ export class LikeService {
   async getLike(query: QueryDto) {
     const { likeId } = query;
     const like = await this.prisma.like.findUnique({
-      where: { id: likeId, isDelete: { equals: false } },
+      where: { id: likeId, ...this.isNotDelete },
       include: { user: true },
     });
+    if (!like) throw new HttpException('Like not found', HttpStatus.NOT_FOUND);
     return like;
   }
 

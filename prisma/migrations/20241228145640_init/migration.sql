@@ -3,14 +3,15 @@ CREATE TABLE `User` (
     `id` VARCHAR(191) NOT NULL,
     `firstName` VARCHAR(191) NOT NULL,
     `lastName` VARCHAR(191) NOT NULL,
-    `password` VARCHAR(191) NOT NULL,
     `role` INTEGER NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `fullName` VARCHAR(191) NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `resetToken` VARCHAR(191) NULL,
     `resetTokenExpires` BIGINT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    INDEX `User_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -18,14 +19,16 @@ CREATE TABLE `User` (
 CREATE TABLE `UserEmail` (
     `id` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
+    `password` VARCHAR(191) NOT NULL,
     `audience` INTEGER NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
 
     UNIQUE INDEX `UserEmail_email_key`(`email`),
     UNIQUE INDEX `UserEmail_userId_key`(`userId`),
+    INDEX `UserEmail_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -35,11 +38,12 @@ CREATE TABLE `UserInfo` (
     `content` VARCHAR(191) NOT NULL,
     `type` INTEGER NOT NULL,
     `audience` INTEGER NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
 
+    INDEX `UserInfo_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -51,12 +55,13 @@ CREATE TABLE `UserWork` (
     `audience` INTEGER NOT NULL,
     `cityCode` INTEGER NOT NULL,
     `isCurrently` BOOLEAN NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `description` VARCHAR(3000) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
 
+    INDEX `UserWork_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -66,12 +71,13 @@ CREATE TABLE `UserEducation` (
     `school` VARCHAR(191) NOT NULL,
     `audience` INTEGER NOT NULL,
     `isGraduated` BOOLEAN NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `description` VARCHAR(3000) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
 
+    INDEX `UserEducation_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -81,19 +87,20 @@ CREATE TABLE `UserLived` (
     `cityCode` INTEGER NOT NULL,
     `districtCode` INTEGER NOT NULL,
     `audience` INTEGER NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
 
     UNIQUE INDEX `UserLived_userId_key`(`userId`),
+    INDEX `UserLived_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `TimePeriod` (
     `id` VARCHAR(191) NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userWorkId` VARCHAR(191) NULL,
@@ -101,6 +108,7 @@ CREATE TABLE `TimePeriod` (
 
     UNIQUE INDEX `TimePeriod_userWorkId_key`(`userWorkId`),
     UNIQUE INDEX `TimePeriod_userEducationId_key`(`userEducationId`),
+    INDEX `TimePeriod_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -110,7 +118,7 @@ CREATE TABLE `DateRange` (
     `year` INTEGER NOT NULL,
     `month` INTEGER NOT NULL,
     `date` INTEGER NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `startDateId` VARCHAR(191) NULL,
@@ -118,6 +126,7 @@ CREATE TABLE `DateRange` (
 
     UNIQUE INDEX `DateRange_startDateId_key`(`startDateId`),
     UNIQUE INDEX `DateRange_endDateId_key`(`endDateId`),
+    INDEX `DateRange_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -127,12 +136,13 @@ CREATE TABLE `Permission` (
     `create` BOOLEAN NOT NULL,
     `update` BOOLEAN NOT NULL,
     `remove` BOOLEAN NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
 
     UNIQUE INDEX `Permission_userId_key`(`userId`),
+    INDEX `Permission_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -152,6 +162,7 @@ CREATE TABLE `Auth` (
 CREATE TABLE `Friend` (
     `id` VARCHAR(191) NOT NULL,
     `status` INTEGER NOT NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `requesterId` VARCHAR(191) NOT NULL,
@@ -159,6 +170,7 @@ CREATE TABLE `Friend` (
 
     UNIQUE INDEX `Friend_requesterId_key`(`requesterId`),
     UNIQUE INDEX `Friend_receiverId_key`(`receiverId`),
+    INDEX `Friend_isDelete_idx`(`isDelete`),
     UNIQUE INDEX `Friend_requesterId_receiverId_key`(`requesterId`, `receiverId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -170,22 +182,25 @@ CREATE TABLE `Post` (
     `cityCode` INTEGER NULL,
     `feeling` INTEGER NULL,
     `audience` INTEGER NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
 
+    INDEX `Post_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `PostOnUser` (
     `id` VARCHAR(191) NOT NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `postId` VARCHAR(191) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
 
+    INDEX `PostOnUser_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -195,35 +210,39 @@ CREATE TABLE `Event` (
     `title` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NULL,
     `date` DATETIME(3) NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `creatorId` VARCHAR(191) NOT NULL,
 
+    INDEX `Event_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `EventOnUser` (
     `id` VARCHAR(191) NOT NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `eventId` VARCHAR(191) NOT NULL,
 
+    INDEX `EventOnUser_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Follow` (
     `id` VARCHAR(191) NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `followerId` VARCHAR(191) NOT NULL,
     `followedId` VARCHAR(191) NOT NULL,
     `postId` VARCHAR(191) NOT NULL,
 
+    INDEX `Follow_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -232,24 +251,26 @@ CREATE TABLE `Comment` (
     `id` VARCHAR(191) NOT NULL,
     `content` VARCHAR(3000) NOT NULL,
     `parentId` VARCHAR(191) NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `postId` VARCHAR(191) NOT NULL,
 
+    INDEX `Comment_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Like` (
     `id` VARCHAR(191) NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `postId` VARCHAR(191) NOT NULL,
 
+    INDEX `Like_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -261,7 +282,7 @@ CREATE TABLE `Media` (
     `publicId` VARCHAR(191) NOT NULL,
     `type` VARCHAR(191) NOT NULL,
     `hash` VARCHAR(191) NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userId` VARCHAR(191) NULL,
@@ -269,6 +290,7 @@ CREATE TABLE `Media` (
 
     UNIQUE INDEX `Media_hash_key`(`hash`),
     UNIQUE INDEX `Media_userId_key`(`userId`),
+    INDEX `Media_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -278,10 +300,11 @@ CREATE TABLE `City` (
     `nameEn` VARCHAR(191) NOT NULL,
     `nameVn` VARCHAR(191) NOT NULL,
     `code` INTEGER NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    INDEX `City_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -292,10 +315,11 @@ CREATE TABLE `District` (
     `nameVn` VARCHAR(191) NOT NULL,
     `code` INTEGER NOT NULL,
     `cityCode` INTEGER NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    INDEX `District_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -306,10 +330,11 @@ CREATE TABLE `Ward` (
     `nameVn` VARCHAR(191) NOT NULL,
     `code` INTEGER NOT NULL,
     `districtCode` INTEGER NOT NULL,
-    `isDelete` BOOLEAN NULL,
+    `isDelete` BOOLEAN NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    INDEX `Ward_isDelete_idx`(`isDelete`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

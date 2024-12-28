@@ -4,46 +4,34 @@ import { QueryDto } from 'src/common/dto/query.dto';
 import { Paging } from 'src/common/type/base';
 import { City } from '@prisma/client';
 import { CityDto } from './city.dto';
+import { CityHelper } from './city.helper';
 import { ELang } from 'src/common/enum/base';
 import utils from 'src/utils';
 
 @Injectable()
 export class CityService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cityHelper: CityHelper,
+  ) {}
 
-  private getSelectFields(langCode: ELang) {
-    return {
-      id: true,
-      nameEn: langCode === ELang.EN,
-      nameVn: langCode === ELang.VN,
-      code: true,
-      isDelete: true,
-      createdAt: true,
-      updatedAt: true,
-    };
-  }
-
-  private convertCollection(cities: City[], langCode: ELang) {
-    return cities.map((city) => ({
-      ...utils.convertRecordsName<City>(city, langCode),
-    }));
-  }
+  private isNotDelete = { isDelete: { equals: false } };
 
   async getCities(query: QueryDto) {
     const { keywords, sortBy, langCode } = query;
     const cities = await this.prisma.city.findMany({
-      where: { isDelete: { equals: false } },
+      where: this.isNotDelete,
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
-      select: { ...this.getSelectFields(langCode) },
+      select: { ...this.cityHelper.getSelectFields(langCode) },
     });
     let filterCities: City[] = [];
     if (keywords)
       return cities.filter((city) =>
         langCode === ELang.EN
-          ? city.nameEn.toLowerCase().includes(keywords.toLowerCase())
-          : city.nameVn.toLowerCase().includes(keywords.toLowerCase()),
+          ? utils.filterByKeywords(city.nameEn, keywords)
+          : utils.filterByKeywords(city.nameVn, keywords),
       );
-    const items = this.convertCollection(keywords ? filterCities : cities, langCode);
+    const items = this.cityHelper.convertCollection(keywords ? filterCities : cities, langCode);
     return { totalItems: keywords ? filterCities.length : cities.length, items };
   }
 
@@ -51,28 +39,29 @@ export class CityService {
     const { page, limit, keywords, sortBy, langCode } = query;
     let collection: Paging<City> = utils.defaultCollection();
     const cities = await this.prisma.city.findMany({
-      where: { isDelete: { equals: false } },
+      where: this.isNotDelete,
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
-      select: { ...this.getSelectFields(langCode) },
+      select: { ...this.cityHelper.getSelectFields(langCode) },
     });
     if (keywords) {
       const filterCities = cities.filter((city) =>
         langCode === ELang.EN
-          ? city.nameEn.toLowerCase().includes(keywords.toLowerCase())
-          : city.nameVn.toLowerCase().includes(keywords.toLowerCase()),
+          ? utils.filterByKeywords(city.nameEn, keywords)
+          : utils.filterByKeywords(city.nameVn, keywords),
       );
       collection = utils.paging<City>(filterCities, page, limit);
     } else collection = utils.paging<City>(cities, page, limit);
-    const items = this.convertCollection(collection.items, langCode);
+    const items = this.cityHelper.convertCollection(collection.items, langCode);
     return { ...collection, items };
   }
 
   async getCity(query: QueryDto) {
     const { cityId, langCode } = query;
     const city = await this.prisma.city.findUnique({
-      where: { id: cityId, isDelete: { equals: false } },
-      select: { ...this.getSelectFields(langCode) },
+      where: { id: cityId, ...this.isNotDelete },
+      select: { ...this.cityHelper.getSelectFields(langCode) },
     });
+    if (!city) throw new HttpException('City not found', HttpStatus.NOT_FOUND);
     return utils.convertRecordsName<City>(city, langCode);
   }
 

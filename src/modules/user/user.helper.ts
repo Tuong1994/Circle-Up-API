@@ -14,9 +14,12 @@ export class UserHelper {
       id: true,
       firstName: true,
       lastName: true,
+      fullName: true,
       role: true,
       resetToken: true,
       resetTokenExpires: true,
+      createdAt: true,
+      updatedAt: true,
     };
   }
 
@@ -163,5 +166,12 @@ export class UserHelper {
         });
       }),
     );
+  }
+
+  getUserFullName(firstName: string, lastName: string) {
+    if (!firstName && !lastName) return '';
+    if (!firstName && lastName) return '';
+    if (firstName && lastName) return firstName;
+    return `${lastName} ${firstName}`;
   }
 }

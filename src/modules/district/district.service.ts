@@ -5,46 +5,33 @@ import { Paging } from 'src/common/type/base';
 import { District } from '@prisma/client';
 import { DistrictDto } from './district.dto';
 import { ELang } from 'src/common/enum/base';
-import utils from 'src/utils';
+import { DistrictHelper } from './district.helper';
+import utils from '../../utils';
 
 @Injectable()
 export class DistrictService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private districtHelper: DistrictHelper,
+  ) {}
 
-  private getSelectFields(langCode: ELang) {
-    return {
-      id: true,
-      nameEn: langCode === ELang.EN,
-      nameVn: langCode === ELang.VN,
-      code: true,
-      cityCode: true,
-      isDelete: true,
-      createdAt: true,
-      updatedAt: true,
-    };
-  }
-
-  private convertCollection(districts: District[], langCode: ELang) {
-    return districts.map((district) => ({
-      ...utils.convertRecordsName<District>(district, langCode),
-    }));
-  }
+  private isNotDelete = { isDelete: { equals: false } };
 
   async getDistricts(query: QueryDto) {
     const { keywords, sortBy, langCode, cityCode } = query;
     const districts = await this.prisma.district.findMany({
-      where: { AND: [{ cityCode: cityCode && Number(cityCode) }, { isDelete: { equals: false } }] },
+      where: { AND: [{ cityCode: cityCode && Number(cityCode) }, { ...this.isNotDelete }] },
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
-      select: { ...this.getSelectFields(langCode) },
+      select: { ...this.districtHelper.getSelectFields(langCode) },
     });
     let filterDistricts: District[] = [];
     if (keywords)
       filterDistricts = districts.filter((district) =>
         langCode === ELang.EN
-          ? district.nameEn.toLowerCase().includes(keywords.toLowerCase())
-          : district.nameVn.toLowerCase().includes(keywords.toLowerCase()),
+          ? utils.filterByKeywords(district.nameEn, keywords)
+          : utils.filterByKeywords(district.nameVn, keywords),
       );
-    const items = this.convertCollection(keywords ? filterDistricts : districts, langCode);
+    const items = this.districtHelper.convertCollection(keywords ? filterDistricts : districts, langCode);
     return { totalItems: keywords ? filterDistricts.length : districts.length, items };
   }
 
@@ -52,28 +39,29 @@ export class DistrictService {
     const { page, limit, keywords, sortBy, langCode, cityCode } = query;
     let collection: Paging<District> = utils.defaultCollection();
     const districts = await this.prisma.district.findMany({
-      where: { AND: [{ cityCode: cityCode && Number(cityCode) }, { isDelete: { equals: false } }] },
+      where: { AND: [{ cityCode: cityCode && Number(cityCode) }, { ...this.isNotDelete }] },
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
-      select: { ...this.getSelectFields(langCode) },
+      select: { ...this.districtHelper.getSelectFields(langCode) },
     });
     if (keywords) {
       const filterDistricts = districts.filter((district) =>
         langCode === ELang.EN
-          ? district.nameEn.toLowerCase().includes(keywords.toLowerCase())
-          : district.nameVn.toLowerCase().includes(keywords.toLowerCase()),
+          ? utils.filterByKeywords(district.nameEn, keywords)
+          : utils.filterByKeywords(district.nameVn, keywords),
       );
       collection = utils.paging<District>(filterDistricts, page, limit);
     } else collection = utils.paging<District>(districts, page, limit);
-    const items = this.convertCollection(collection.items, langCode);
+    const items = this.districtHelper.convertCollection(collection.items, langCode);
     return { ...collection, items };
   }
 
   async getDistrict(query: QueryDto) {
     const { districtId, langCode } = query;
     const district = await this.prisma.district.findUnique({
-      where: { id: districtId, isDelete: { equals: false } },
-      select: { ...this.getSelectFields(langCode) },
+      where: { id: districtId, ...this.isNotDelete },
+      select: { ...this.districtHelper.getSelectFields(langCode) },
     });
+    if (!district) throw new HttpException('District not found', HttpStatus.NOT_FOUND);
     return utils.convertRecordsName<District>(district, langCode);
   }
 

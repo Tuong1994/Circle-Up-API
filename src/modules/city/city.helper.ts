@@ -1,0 +1,25 @@
+import { Injectable } from '@nestjs/common';
+import { ELang } from '../../common/enum/base';
+import { City, Prisma } from '@prisma/client';
+import utils from '../../utils';
+
+@Injectable()
+export class CityHelper {
+  getSelectFields(langCode: ELang): Prisma.CitySelect {
+    return {
+      id: true,
+      nameEn: langCode === ELang.EN,
+      nameVn: langCode === ELang.VN,
+      code: true,
+      isDelete: true,
+      createdAt: true,
+      updatedAt: true,
+    };
+  }
+
+  convertCollection(cities: City[], langCode: ELang) {
+    return cities.map((city) => ({
+      ...utils.convertRecordsName<City>(city, langCode),
+    }));
+  }
+}

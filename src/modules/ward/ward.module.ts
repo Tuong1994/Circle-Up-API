@@ -1,12 +1,13 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { WardController } from './ward.controller';
 import { WardService } from './ward.service';
+import { WardHelper } from './ward.helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { CheckIdMiddleware } from 'src/common/middleware/checkId.middleware';
 
 @Module({
   controllers: [WardController],
-  providers: [WardService],
+  providers: [WardService, WardHelper],
 })
 export class WardModule implements NestModule {
   constructor(private prisma: PrismaService) {}

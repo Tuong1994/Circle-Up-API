@@ -15,6 +15,8 @@ export class QueryDto {
   postId?: string;
   eventId?: string;
   followId?: string;
+  followedId?: string;
+  followerId?: string;
   commentId?: string;
   likeId?: string;
   mediaId?: string;
