@@ -4,7 +4,7 @@ import { ERole } from '../../src/common/enum/base';
 const users: User[] = [
   {
     id: 'U_1',
-    firstName: 'Tuong',
+    firstName: 'Jack',
     lastName: 'Anderson',
     fullName: 'Jack Anderson',
     role: ERole.MANAGER,

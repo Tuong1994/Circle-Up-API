@@ -29,19 +29,20 @@ export class AuthService {
     if (!isRegistered) throw new HttpException('Email is not correct', HttpStatus.NOT_FOUND);
     const isAuth = bcryptjs.compareSync(password, isRegistered.password);
     if (!isAuth) throw new ForbiddenException('Password is not correct');
-    const data = {
+    const resPayload = {
       id: isRegistered.user.id,
       email: isRegistered.email,
       firstName: isRegistered.user.firstName,
       lastName: isRegistered.user.lastName,
+      fullName: isRegistered.user.fullName,
     };
-    const payload: TokenPayload = {
+    const tokenPayload: TokenPayload = {
       email,
       role: isRegistered.user.role,
       id: isRegistered.user.id,
     };
-    const accessToken = await this.authHelper.getAccessToken(payload);
-    const refreshToken = await this.authHelper.getRefreshToken(payload);
+    const accessToken = await this.authHelper.getAccessToken(tokenPayload);
+    const refreshToken = await this.authHelper.getRefreshToken(tokenPayload);
     await this.prisma.auth.upsert({
       where: { userId: isRegistered.user.id },
       create: { token: refreshToken, userId: isRegistered.user.id },
@@ -53,7 +54,7 @@ export class AuthService {
       sameSite: 'none',
       maxAge: 24 * 60 * 60 * 1000,
     });
-    res.json({ token: accessToken.token, exp: accessToken.exp, isAuth: true, payload: data });
+    res.json({ token: accessToken.token, exp: accessToken.exp, isAuth: true, payload: resPayload });
   }
 
   async signUp(auth: AuthSignUpDto) {

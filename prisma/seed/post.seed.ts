@@ -4,8 +4,6 @@ import { EPostFeeling } from '../../src/modules/post/post.enum';
 
 const feelings = Object.values(EPostFeeling).filter((value) => typeof value === 'number');
 
-const audiences = Object.values(EAudience).filter((value) => typeof value === 'number');
-
 const posts: Post[] = Array.from({ length: 50 }, (_, index) => ({
   id: `P_${index + 1}`,
   content: `Post content for id P_${index + 1}`,
