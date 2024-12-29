@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import utils from '../../utils';
 import { PostWithPayload } from './post.type';
+import utils from 'src/utils';
 
 @Injectable()
 export class PostHelper {

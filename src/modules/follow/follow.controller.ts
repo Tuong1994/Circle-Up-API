@@ -10,50 +10,50 @@ export class FollowController {
   constructor(private followService: FollowService) {}
 
   @Get('list')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   getFollows(@QueryPaging() query: QueryDto) {
     return this.followService.getFollows(query);
   }
 
   @Get('detail')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   getFollow(@Query() query: QueryDto) {
     return this.followService.getFollow(query);
   }
 
   @Post('create')
-  @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.CREATED)
   createFollow(@Body() follow: FollowDto) {
     return this.followService.createFollow(follow);
   }
 
   @Put('update')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   updateFollow(@Query() query: QueryDto, @Body() follow: FollowDto) {
     return this.followService.updateFollow(query, follow);
   }
 
   @Post('remove')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   removeFollows(@Query() query: QueryDto) {
     return this.followService.removeFollows(query);
   }
 
   @Post('removePermanent')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   removeFollowsPermanent(@Query() query: QueryDto) {
     return this.followService.removeFollowsPermanent(query);
   }
 
   @Post('restore')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   restoreFollows() {
     return this.followService.restoreFollows();
   }

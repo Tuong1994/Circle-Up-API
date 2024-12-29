@@ -4,7 +4,10 @@ import { QueryDto } from 'src/common/dto/query.dto';
 import { Paging, List } from 'src/common/type/base';
 import { Comment } from '@prisma/client';
 import { CommentDto } from './comment.dto';
+import responseMessage from 'src/common/message';
 import utils from 'src/utils';
+
+const { UPDATE, REMOVE, NOT_FOUND, NO_DATA_RESTORE, RESTORE } = responseMessage;
 
 @Injectable()
 export class CommentService {
@@ -44,7 +47,6 @@ export class CommentService {
     const comment = await this.prisma.comment.findUnique({
       where: { id: commentId, ...this.isNotDelete },
     });
-    if (!comment) throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
     return comment;
   }
 
@@ -63,47 +65,35 @@ export class CommentService {
       where: { id: commentId },
       data: { content, userId, postId, parentId },
     });
-    throw new HttpException('Updated success', HttpStatus.OK);
+    throw new HttpException(UPDATE, HttpStatus.OK);
   }
 
   async removeComments(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
-    const comments = await this.prisma.comment.findMany({
-      where: { id: { in: listIds } },
-    });
-    if (comments && !comments.length) throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
-    await this.prisma.comment.updateMany({
-      where: { id: { in: listIds } },
-      data: { isDelete: true },
-    });
-    throw new HttpException('Removed success', HttpStatus.OK);
+    const comments = await this.prisma.comment.findMany({ where: { id: { in: listIds } } });
+    if (comments && !comments.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
+    await this.prisma.comment.updateMany({ where: { id: { in: listIds } }, data: { isDelete: true } });
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async removeCommentsPermanent(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
-    const comments = await this.prisma.comment.findMany({
-      where: { id: { in: listIds } },
-    });
-    if (comments && !comments.length) throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
+    const comments = await this.prisma.comment.findMany({ where: { id: { in: listIds } } });
+    if (comments && !comments.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.comment.deleteMany({ where: { id: { in: listIds } } });
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async restoreComments() {
-    const comments = await this.prisma.comment.findMany({
-      where: { isDelete: { equals: true } },
-    });
-    if (comments && !comments.length) throw new HttpException('There are no data to restored', HttpStatus.OK);
+    const comments = await this.prisma.comment.findMany({ where: { isDelete: { equals: true } } });
+    if (comments && !comments.length) throw new HttpException(NO_DATA_RESTORE, HttpStatus.OK);
     await Promise.all(
       comments.map(async (comment) => {
-        await this.prisma.comment.update({
-          where: { id: comment.id },
-          data: { isDelete: false },
-        });
+        await this.prisma.comment.update({ where: { id: comment.id }, data: { isDelete: false } });
       }),
     );
-    throw new HttpException('Restored success', HttpStatus.OK);
+    throw new HttpException(RESTORE, HttpStatus.OK);
   }
 }

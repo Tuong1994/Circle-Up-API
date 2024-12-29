@@ -30,103 +30,103 @@ export class UserController {
   }
 
   @Get('detail')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   getUser(@Query() query: QueryDto) {
     return this.userService.getUser(query);
   }
 
   @Post('create')
-  @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.CREATED)
   createUser(@Body() user: UserDto) {
     return this.userService.createUser(user);
   }
 
   @Post('createInfo')
-  @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.CREATED)
   createUserInfo(@Body() info: UserInfoDto) {
     return this.userService.createUserInfo(info);
   }
 
   @Post('createWork')
-  @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.CREATED)
   createUserWork(@Body() work: UserWorkDto) {
     return this.userService.createUserWork(work);
   }
 
   @Post('createEducation')
-  @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.CREATED)
   createUserEducation(@Body() education: UserEducationDto) {
     return this.userService.createUserEducation(education);
   }
 
   @Post('createLived')
-  @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.CREATED)
   createUserLived(@Body() lived: UserLivedDto) {
     return this.userService.createUserLived(lived);
   }
 
   @Put('update')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   updateUser(@Query() query: QueryDto, @Body() user: UserUpdateDto) {
     return this.userService.updateUser(query, user);
   }
 
   @Put('updateInfo')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   updateUserInfo(@Query() query: QueryDto, @Body() info: UserInfoDto) {
     return this.userService.updateUserInfo(query, info);
   }
 
   @Put('updateWork')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   updateUserWork(@Query() query: QueryDto, @Body() work: UserWorkDto) {
     return this.userService.updateUserWork(query, work);
   }
 
   @Put('updateEducation')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   updateUserEducation(@Query() query: QueryDto, @Body() education: UserEducationDto) {
     return this.userService.updateUserEducation(query, education);
   }
 
   @Put('updateLived')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   updateUserLived(@Query() query: QueryDto, @Body() lived: UserLivedDto) {
     return this.userService.updateUserLived(query, lived);
   }
 
   @Delete('remove')
-  @HttpCode(HttpStatus.OK)
   @Roles(ERole.STAFF, ERole.LEADER, ERole.MANAGER)
   @UseGuards(JwtGuard, RoleGuard)
+  @HttpCode(HttpStatus.OK)
   removeUsers(@Query() query: QueryDto) {
     return this.userService.removeUsers(query);
   }
 
   @Delete('removePermanent')
-  @HttpCode(HttpStatus.OK)
   @Roles(ERole.LEADER, ERole.MANAGER)
   @UseGuards(JwtGuard, RoleGuard)
+  @HttpCode(HttpStatus.OK)
   removeUsersPermanent(@Query() query: QueryDto) {
     return this.userService.removeUsersPermanent(query);
   }
 
   @Post('restore')
-  @HttpCode(HttpStatus.OK)
   @Roles(ERole.LEADER, ERole.MANAGER)
   @UseGuards(JwtGuard, RoleGuard)
+  @HttpCode(HttpStatus.OK)
   restoreUsers() {
-    return this.userService.restoreUsers()
+    return this.userService.restoreUsers();
   }
 }

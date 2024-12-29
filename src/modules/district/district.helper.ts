@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { District, Prisma } from '@prisma/client';
-import { ELang } from '../../common/enum/base';
-import utils from '../../utils';
+import { ELang } from 'src/common/enum/base';
+import utils from 'src/utils';
 
 @Injectable()
 export class DistrictHelper {

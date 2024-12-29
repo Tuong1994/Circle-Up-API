@@ -6,7 +6,10 @@ import { District } from '@prisma/client';
 import { DistrictDto } from './district.dto';
 import { ELang } from 'src/common/enum/base';
 import { DistrictHelper } from './district.helper';
-import utils from '../../utils';
+import responseMessage from 'src/common/message';
+import utils from 'src/utils';
+
+const { UPDATE, REMOVE, NOT_FOUND, NO_DATA_RESTORE, RESTORE } = responseMessage;
 
 @Injectable()
 export class DistrictService {
@@ -61,7 +64,6 @@ export class DistrictService {
       where: { id: districtId, ...this.isNotDelete },
       select: { ...this.districtHelper.getSelectFields(langCode) },
     });
-    if (!district) throw new HttpException('District not found', HttpStatus.NOT_FOUND);
     return utils.convertRecordsName<District>(district, langCode);
   }
 
@@ -80,36 +82,35 @@ export class DistrictService {
       where: { id: districtId },
       data: { nameEn, nameVn, code, cityCode },
     });
-    throw new HttpException('Updated success', HttpStatus.OK);
+    throw new HttpException(UPDATE, HttpStatus.OK);
   }
 
   async removeDistricts(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
     const districts = await this.prisma.district.findMany({ where: { id: { in: listIds } } });
-    if (districts && !districts.length) throw new HttpException('District not found', HttpStatus.NOT_FOUND);
+    if (districts && !districts.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.district.updateMany({ where: { id: { in: listIds } }, data: { isDelete: true } });
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async removeDistrictsPermanent(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
     const districts = await this.prisma.district.findMany({ where: { id: { in: listIds } } });
-    if (districts && !districts.length) throw new HttpException('District not found', HttpStatus.NOT_FOUND);
+    if (districts && !districts.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.district.deleteMany({ where: { id: { in: listIds } } });
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async restoreDistricts() {
     const districts = await this.prisma.district.findMany({ where: { isDelete: { equals: true } } });
-    if (districts && !districts.length)
-      throw new HttpException('There are no data to restored', HttpStatus.OK);
+    if (districts && !districts.length) throw new HttpException(NO_DATA_RESTORE, HttpStatus.OK);
     await Promise.all(
       districts.map(async (district) => {
         await this.prisma.district.update({ where: { id: district.id }, data: { isDelete: false } });
       }),
     );
-    throw new HttpException('Restored success', HttpStatus.OK);
+    throw new HttpException(RESTORE, HttpStatus.OK);
   }
 }

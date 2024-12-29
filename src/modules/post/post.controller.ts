@@ -28,55 +28,55 @@ export class PostController {
   constructor(private postService: PostService) {}
 
   @Get('list')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   getPosts(@QueryPaging() query: QueryDto) {
     return this.postService.getPosts(query);
   }
 
   @Get('detail')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   getPost(@Query() query: QueryDto) {
     return this.postService.getPost(query);
   }
 
   @Post('create')
-  @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtGuard)
   @UseInterceptors(FilesInterceptor('medias', 5, multerOption()))
+  @HttpCode(HttpStatus.CREATED)
   createPost(@Query() query: QueryDto, @UploadedFiles() files: Express.Multer.File[], @Body() post: PostDto) {
     return this.postService.creatPost(query, files, post);
   }
 
   @Put('update')
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
   @UseInterceptors(FilesInterceptor('medias', 5, multerOption()))
+  @HttpCode(HttpStatus.OK)
   updatePost(@Query() query: QueryDto, @UploadedFiles() files: Express.Multer.File[], @Body() post: PostDto) {
     return this.postService.updatePost(query, files, post);
   }
 
   @Post('remove')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtGuard, RoleGuard)
   @Roles(ERole.STAFF, ERole.LEADER, ERole.MANAGER)
+  @UseGuards(JwtGuard, RoleGuard)
+  @HttpCode(HttpStatus.OK)
   removePosts(@Query() query: QueryDto) {
     return this.postService.removePosts(query);
   }
 
   @Delete('removePermanent')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtGuard, RoleGuard)
   @Roles(ERole.LEADER, ERole.MANAGER)
+  @UseGuards(JwtGuard, RoleGuard)
+  @HttpCode(HttpStatus.OK)
   removePostsPermanent(@Query() query: QueryDto) {
     return this.postService.removePostsPermanent(query);
   }
 
   @Post('restore')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtGuard, RoleGuard)
   @Roles(ERole.LEADER, ERole.MANAGER)
+  @UseGuards(JwtGuard, RoleGuard)
+  @HttpCode(HttpStatus.OK)
   restorePosts() {
     return this.postService.restorePosts();
   }

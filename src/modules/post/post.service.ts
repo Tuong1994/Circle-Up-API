@@ -6,7 +6,10 @@ import { Post } from '@prisma/client';
 import { PostHelper } from './post.helper';
 import { PostDto } from './post.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import utils from '../../utils';
+import responseMessage from 'src/common/message';
+import utils from 'src/utils';
+
+const { UPDATE, REMOVE, RESTORE, NOT_FOUND, NO_DATA_RESTORE } = responseMessage;
 
 @Injectable()
 export class PostService {
@@ -45,7 +48,6 @@ export class PostService {
         medias: { where: this.isNotDelete, select: { ...this.postHelper.getPostMediaFields() } },
       },
     });
-    if(!post) throw new HttpException('Post not found', HttpStatus.NOT_FOUND)
     return post;
   }
 
@@ -102,7 +104,7 @@ export class PostService {
         audience: Number(audience),
       },
     });
-    if (!files || !files.length) throw new HttpException('Updated success', HttpStatus.OK);
+    if (!files || !files.length) throw new HttpException(UPDATE, HttpStatus.OK);
     await Promise.all(
       files.map(async (file) => {
         const { existMedia, fileHash } = await this.postHelper.getExistedMedia(file);
@@ -116,7 +118,7 @@ export class PostService {
         await this.prisma.media.create({ data: generateFile });
       }),
     );
-    throw new HttpException('Updated success', HttpStatus.OK);
+    throw new HttpException(UPDATE, HttpStatus.OK);
   }
 
   async removePosts(query: QueryDto) {
@@ -126,7 +128,7 @@ export class PostService {
       where: { id: { in: listIds } },
       select: { id: true, medias: true, comments: true, likes: true, tags: true, followers: true },
     });
-    if (posts && !posts.length) throw new HttpException('Posts not found', HttpStatus.NOT_FOUND);
+    if (posts && !posts.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.post.updateMany({ where: { id: { in: listIds } }, data: { isDelete: true } });
     await Promise.all(
       posts.map(async (post) => {
@@ -137,16 +139,16 @@ export class PostService {
         if (post.medias.length > 0) await this.postHelper.handleUpdateIsDeletePostMedias(post, true);
       }),
     );
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async removePostsPermanent(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
     const posts = await this.prisma.post.findMany({ where: { id: { in: listIds } } });
-    if (posts && !posts.length) throw new HttpException('Posts not found', HttpStatus.NOT_FOUND);
+    if (posts && !posts.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.post.deleteMany({ where: { id: { in: listIds } } });
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async restorePosts() {
@@ -154,7 +156,7 @@ export class PostService {
       where: { isDelete: { equals: true } },
       select: { id: true, medias: true, comments: true, likes: true, tags: true, followers: true },
     });
-    if (posts && !posts.length) throw new HttpException('No data to restore', HttpStatus.OK);
+    if (posts && !posts.length) throw new HttpException(NO_DATA_RESTORE, HttpStatus.OK);
     await Promise.all(
       posts.map(async (post) => {
         await this.prisma.post.update({ where: { id: post.id }, data: { isDelete: false } });
@@ -165,6 +167,6 @@ export class PostService {
         if (post.medias.length > 0) await this.postHelper.handleUpdateIsDeletePostMedias(post, false);
       }),
     );
-    throw new HttpException('Restored success', HttpStatus.OK);
+    throw new HttpException(RESTORE, HttpStatus.OK);
   }
 }

@@ -6,7 +6,10 @@ import { Ward } from '@prisma/client';
 import { WardDto } from './ward.dto';
 import { WardHelper } from './ward.helper';
 import { ELang } from 'src/common/enum/base';
+import responseMessage from 'src/common/message';
 import utils from 'src/utils';
+
+const { UPDATE, REMOVE, NOT_FOUND, NO_DATA_RESTORE, RESTORE } = responseMessage;
 
 @Injectable()
 export class WardService {
@@ -65,7 +68,6 @@ export class WardService {
       where: { id: wardId, ...this.isNotDelete },
       select: { ...this.wardHelper.getSelectFields(langCode) },
     });
-    if (!ward) throw new HttpException('Ward not found', HttpStatus.NOT_FOUND);
     return utils.convertRecordsName<Ward>(ward, langCode);
   }
 
@@ -84,35 +86,35 @@ export class WardService {
       where: { id: wardId },
       data: { nameEn, nameVn, code, districtCode },
     });
-    throw new HttpException('Updated success', HttpStatus.OK);
+    throw new HttpException(UPDATE, HttpStatus.OK);
   }
 
   async removeWards(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
     const wards = await this.prisma.ward.findMany({ where: { id: { in: listIds } } });
-    if (wards && !wards.length) throw new HttpException('Ward not found', HttpStatus.NOT_FOUND);
+    if (wards && !wards.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.ward.updateMany({ where: { id: { in: listIds } }, data: { isDelete: true } });
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async removeWardsPermanent(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
     const wards = await this.prisma.ward.findMany({ where: { id: { in: listIds } } });
-    if (wards && !wards.length) throw new HttpException('Ward not found', HttpStatus.NOT_FOUND);
+    if (wards && !wards.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.ward.deleteMany({ where: { id: { in: listIds } } });
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async restoreWards() {
     const wards = await this.prisma.ward.findMany({ where: { isDelete: { equals: true } } });
-    if (wards && !wards.length) throw new HttpException('There are no data to restored', HttpStatus.OK);
+    if (wards && !wards.length) throw new HttpException(NO_DATA_RESTORE, HttpStatus.OK);
     await Promise.all(
       wards.map(async (ward) => {
         await this.prisma.ward.update({ where: { id: ward.id }, data: { isDelete: false } });
       }),
     );
-    throw new HttpException('Restored success', HttpStatus.OK);
+    throw new HttpException(RESTORE, HttpStatus.OK);
   }
 }

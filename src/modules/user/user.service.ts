@@ -8,7 +8,10 @@ import { EAudience } from 'src/common/enum/base';
 import { EUserInfoType } from './user.enum';
 import { UserEmail, UserInfo } from '@prisma/client';
 import { UserHelper } from './user.helper';
+import responseMessage from 'src/common/message';
 import utils from 'src/utils';
+
+const { UPDATE, REMOVE, NOT_FOUND, RESTORE, NO_DATA_RESTORE, SERVER_ERROR } = responseMessage;
 
 @Injectable()
 export class UserService {
@@ -56,14 +59,13 @@ export class UserService {
         lived: this.userHelper.getLivedSelection(),
       },
     });
-    if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     return user;
   }
 
   async createUser(user: UserDto) {
     const { email, password, firstName, lastName, role } = user;
     const hash = utils.bcryptHash(password);
-    const fullName = this.userHelper.getUserFullName(firstName, lastName)
+    const fullName = this.userHelper.getUserFullName(firstName, lastName);
     const newUser = await this.prisma.user.create({
       data: { firstName, lastName, fullName, role, isDelete: false },
       select: { ...this.userHelper.getUserFields() },
@@ -72,7 +74,8 @@ export class UserService {
       data: { email, password: hash, userId: newUser.id, isDelete: false, audience: EAudience.PUBLIC },
       select: { ...this.userHelper.getUserEmailFields() },
     });
-    return { ...newUser, account: { ...newUserEmail } };
+    const userResponse = { ...newUser, account: { ...newUserEmail } };
+    return userResponse
   }
 
   async createUserInfo(info: UserInfoDto) {
@@ -96,7 +99,7 @@ export class UserService {
     const newWork = await this.prisma.userWork.create({
       data: { company, position, cityCode, description, isCurrently, audience, userId, isDelete: false },
     });
-    if (!newWork) throw new HttpException('Something wrong', HttpStatus.INTERNAL_SERVER_ERROR);
+    if (!newWork) throw new HttpException(SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     const newTimePeriod = await this.prisma.timePeriod.create({
       data: { userWorkId: newWork.id, isDelete: false },
     });
@@ -141,9 +144,9 @@ export class UserService {
   async updateUser(query: QueryDto, user: UserUpdateDto) {
     const { userId } = query;
     const { firstName, lastName, role } = user;
-    const fullName = this.userHelper.getUserFullName(firstName, lastName)
+    const fullName = this.userHelper.getUserFullName(firstName, lastName);
     await this.prisma.user.update({ where: { id: userId }, data: { firstName, lastName, fullName, role } });
-    throw new HttpException('Updated success', HttpStatus.OK);
+    throw new HttpException(UPDATE, HttpStatus.OK);
   }
 
   async updateUserInfo(query: QueryDto, info: UserInfoDto) {
@@ -153,7 +156,7 @@ export class UserService {
       where: { id: userInfoId },
       data: { content, type, userId, audience },
     });
-    throw new HttpException('Updated success', HttpStatus.OK);
+    throw new HttpException(UPDATE, HttpStatus.OK);
   }
 
   async updateUserWork(query: QueryDto, work: UserWorkDto) {
@@ -173,7 +176,7 @@ export class UserService {
       if (!userWork.timePeriod.endDate) await this.prisma.dateRange.create({ data: { ...endDate } });
       else await this.prisma.dateRange.update({ where: { id: endDate.id }, data: { ...endDate } });
     }
-    throw new HttpException('Updated success', HttpStatus.OK);
+    throw new HttpException(UPDATE, HttpStatus.OK);
   }
 
   async updateUserEducation(query: QueryDto, education: UserEducationDto) {
@@ -192,7 +195,7 @@ export class UserService {
       if (!userEducation.timePeriod.endDate) await this.prisma.dateRange.create({ data: { ...endDate } });
       else await this.prisma.dateRange.update({ where: { id: endDate.id }, data: { ...endDate } });
     }
-    throw new HttpException('Updated success', HttpStatus.OK);
+    throw new HttpException(UPDATE, HttpStatus.OK);
   }
 
   async updateUserLived(query: QueryDto, lived: UserLivedDto) {
@@ -202,7 +205,7 @@ export class UserService {
       where: { id: userLivedId },
       data: { cityCode, districtCode, audience, userId },
     });
-    throw new HttpException('Updated success', HttpStatus.OK);
+    throw new HttpException(UPDATE, HttpStatus.OK);
   }
 
   async removeUsers(query: QueryDto) {
@@ -212,7 +215,7 @@ export class UserService {
       where: { id: { in: listIds } },
       select: { id: true, infos: true, account: true, works: true, educations: true, lived: true },
     });
-    if (users && !users.length) throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
+    if (users && !users.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.user.updateMany({ where: { id: { in: listIds } }, data: { isDelete: true } });
     await Promise.all(
       users.map(async (user) => {
@@ -223,16 +226,16 @@ export class UserService {
         if (user.educations.length > 0) await this.userHelper.handleUpdateIsDeleteUserEducations(user, true);
       }),
     );
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async removeUsersPermanent(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
     const users = await this.prisma.user.findMany({ where: { id: { in: listIds } } });
-    if (users && !users.length) throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
+    if (users && !users.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.user.deleteMany({ where: { id: { in: listIds } } });
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async restoreUsers() {
@@ -240,7 +243,7 @@ export class UserService {
       where: { isDelete: { equals: true } },
       select: { id: true, infos: true, account: true, works: true, educations: true, lived: true },
     });
-    if (users && !users.length) throw new HttpException('No data to restore', HttpStatus.OK);
+    if (users && !users.length) throw new HttpException(NO_DATA_RESTORE, HttpStatus.OK);
     await Promise.all(
       users.map(async (user) => {
         await this.prisma.user.update({ where: { id: user.id }, data: { isDelete: false } });
@@ -251,6 +254,6 @@ export class UserService {
         if (user.educations.length > 0) await this.userHelper.handleUpdateIsDeleteUserEducations(user, false);
       }),
     );
-    throw new HttpException('Restored success', HttpStatus.OK);
+    throw new HttpException(RESTORE, HttpStatus.OK);
   }
 }

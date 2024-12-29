@@ -6,7 +6,10 @@ import { City } from '@prisma/client';
 import { CityDto } from './city.dto';
 import { CityHelper } from './city.helper';
 import { ELang } from 'src/common/enum/base';
+import responseMessage from 'src/common/message';
 import utils from 'src/utils';
+
+const { UPDATE, REMOVE, NOT_FOUND, NO_DATA_RESTORE, RESTORE } = responseMessage;
 
 @Injectable()
 export class CityService {
@@ -61,7 +64,6 @@ export class CityService {
       where: { id: cityId, ...this.isNotDelete },
       select: { ...this.cityHelper.getSelectFields(langCode) },
     });
-    if (!city) throw new HttpException('City not found', HttpStatus.NOT_FOUND);
     return utils.convertRecordsName<City>(city, langCode);
   }
 
@@ -77,35 +79,35 @@ export class CityService {
     const { cityId } = query;
     const { nameEn, nameVn, code } = city;
     await this.prisma.city.update({ where: { id: cityId }, data: { nameEn, nameVn, code } });
-    throw new HttpException('Updated success', HttpStatus.OK);
+    throw new HttpException(UPDATE, HttpStatus.OK);
   }
 
   async removeCities(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
     const cities = await this.prisma.city.findMany({ where: { id: { in: listIds } } });
-    if (cities && !cities.length) throw new HttpException('City not found', HttpStatus.NOT_FOUND);
+    if (cities && !cities.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.city.updateMany({ where: { id: { in: listIds } }, data: { isDelete: true } });
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async removeCitiesPermanent(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
     const cities = await this.prisma.city.findMany({ where: { id: { in: listIds } } });
-    if (cities && !cities.length) throw new HttpException('City not found', HttpStatus.NOT_FOUND);
+    if (cities && !cities.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.city.deleteMany({ where: { id: { in: listIds } } });
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async restoreCities() {
     const cities = await this.prisma.city.findMany({ where: { isDelete: { equals: true } } });
-    if (cities && !cities.length) throw new HttpException('There are no data restored', HttpStatus.OK);
+    if (cities && !cities.length) throw new HttpException(NO_DATA_RESTORE, HttpStatus.OK);
     await Promise.all(
       cities.map(async (city) => {
         await this.prisma.city.update({ where: { id: city.id }, data: { isDelete: false } });
       }),
     );
-    throw new HttpException('Restored success', HttpStatus.OK);
+    throw new HttpException(RESTORE, HttpStatus.OK);
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { ELang } from '../../common/enum/base';
+import { ELang } from 'src/common/enum/base';
 import { City, Prisma } from '@prisma/client';
-import utils from '../../utils';
+import utils from 'src/utils';
 
 @Injectable()
 export class CityHelper {

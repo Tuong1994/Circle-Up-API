@@ -83,7 +83,7 @@ export class CheckIdMiddleware implements NestMiddleware {
       },
     });
 
-    if (!record) throw new HttpException('Id not match', HttpStatus.NOT_FOUND);
+    if (!record) throw new HttpException('Record not found', HttpStatus.NOT_FOUND);
     next();
   }
 }

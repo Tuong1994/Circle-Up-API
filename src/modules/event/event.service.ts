@@ -4,25 +4,26 @@ import { QueryDto } from 'src/common/dto/query.dto';
 import { EventDto } from './event.dto';
 import { Paging } from 'src/common/type/base';
 import { Event } from '@prisma/client';
+import responseMessage from 'src/common/message';
 import utils from 'src/utils';
+
+const { UPDATE, REMOVE, RESTORE, NOT_FOUND, NO_DATA_RESTORE } = responseMessage;
 
 @Injectable()
 export class EventService {
   constructor(private prisma: PrismaService) {}
 
+  private isNotDelete = { isDelete: { equals: false } };
+
   async getEvents(query: QueryDto) {
     const { page, limit, sortBy, keywords } = query;
     let collection: Paging<Event> = utils.defaultCollection();
     const events = await this.prisma.event.findMany({
-      where: {
-        AND: [{ isDelete: { equals: false } }],
-      },
+      where: { AND: [{ ...this.isNotDelete }] },
       orderBy: [{ updatedAt: utils.getSortBy(sortBy) ?? 'desc' }],
     });
     if (keywords) {
-      const filterEvents = events.filter((event) =>
-        event.title.toLowerCase().includes(keywords.toLowerCase()),
-      );
+      const filterEvents = events.filter((event) => utils.filterByKeywords(event.title, keywords));
       collection = utils.paging<Event>(filterEvents, page, limit);
     } else collection = utils.paging<Event>(events, page, limit);
     return collection;
@@ -30,7 +31,7 @@ export class EventService {
 
   async getEvent(query: QueryDto) {
     const { eventId } = query;
-    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    const event = await this.prisma.event.findUnique({ where: { id: eventId, ...this.isNotDelete } });
     return event;
   }
 
@@ -46,35 +47,35 @@ export class EventService {
     const { eventId } = query;
     const { title, description, date, creatorId } = event;
     await this.prisma.event.update({ where: { id: eventId }, data: { title, description, date, creatorId } });
-    throw new HttpException('Updated success', HttpStatus.OK);
+    throw new HttpException(UPDATE, HttpStatus.OK);
   }
 
   async removeEvents(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
     const events = await this.prisma.event.findMany({ where: { id: { in: listIds } } });
-    if (events && !events.length) throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+    if (events && !events.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.event.updateMany({ where: { id: { in: listIds } }, data: { isDelete: true } });
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async removeEventsPermanent(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
     const events = await this.prisma.event.findMany({ where: { id: { in: listIds } } });
-    if (events && !events.length) throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+    if (events && !events.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.event.deleteMany({ where: { id: { in: listIds } } });
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async restoreEvents() {
     const events = await this.prisma.event.findMany({ where: { isDelete: true } });
-    if (events && !events.length) throw new HttpException('There are no data to restored', HttpStatus.OK);
+    if (events && !events.length) throw new HttpException(NO_DATA_RESTORE, HttpStatus.OK);
     await Promise.all(
       events.map(async (event) => {
         await this.prisma.event.update({ where: { id: event.id }, data: { isDelete: false } });
       }),
     );
-    throw new HttpException('Restored success', HttpStatus.OK);
+    throw new HttpException(RESTORE, HttpStatus.OK);
   }
 }

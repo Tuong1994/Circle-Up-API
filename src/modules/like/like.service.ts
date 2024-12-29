@@ -4,7 +4,10 @@ import { QueryDto } from 'src/common/dto/query.dto';
 import { LikeDto } from './like.dto';
 import { Like } from '@prisma/client';
 import { Paging } from 'src/common/type/base';
+import responseMessage from 'src/common/message';
 import utils from 'src/utils';
+
+const { UPDATE, REMOVE, NOT_FOUND } = responseMessage;
 
 @Injectable()
 export class LikeService {
@@ -29,7 +32,6 @@ export class LikeService {
       where: { id: likeId, ...this.isNotDelete },
       include: { user: true },
     });
-    if (!like) throw new HttpException('Like not found', HttpStatus.NOT_FOUND);
     return like;
   }
 
@@ -43,15 +45,15 @@ export class LikeService {
     const { likeId } = query;
     const { userId, postId } = like;
     await this.prisma.like.update({ where: { id: likeId }, data: { userId, postId } });
-    throw new HttpException('Updated success', HttpStatus.OK);
+    throw new HttpException(UPDATE, HttpStatus.OK);
   }
 
   async removeLikes(query: QueryDto) {
     const { ids } = query;
     const listIds = ids.split(',');
     const likes = await this.prisma.like.findMany({ where: { id: { in: listIds } } });
-    if (likes && !likes.length) throw new HttpException('Like not found', HttpStatus.NOT_FOUND);
+    if (likes && !likes.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     await this.prisma.like.deleteMany({ where: { id: { in: listIds } } });
-    throw new HttpException('Removed success', HttpStatus.OK);
+    throw new HttpException(REMOVE, HttpStatus.OK);
   }
 }
