@@ -38,7 +38,7 @@ export class EventService {
   async createEvent(event: EventDto) {
     const { title, description, date, creatorId } = event;
     const newEvent = await this.prisma.event.create({
-      data: { title, description, date, creatorId, isDelete: false },
+      data: { title, description, date, creatorId },
     });
     return newEvent;
   }

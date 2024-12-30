@@ -36,7 +36,7 @@ export class FollowService {
   async createFollow(follow: FollowDto) {
     const { followedId, followerId, postId } = follow;
     const newFollow = await this.prisma.follow.create({
-      data: { followedId, followerId, postId, isDelete: false },
+      data: { followedId, followerId, postId },
     });
     return newFollow;
   }

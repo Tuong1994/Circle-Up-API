@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional } from 'class-validator';
 import { EPostFeeling } from './post.enum';
 import { EAudience } from 'src/common/enum/base';
 
@@ -17,4 +17,13 @@ export class PostDto {
 
   @IsNotEmpty()
   userId: string;
+}
+
+export class PostTagDto {
+  @IsNotEmpty()
+  @IsArray()
+  userIds: string[];
+
+  @IsNotEmpty()
+  postId: string;
 }

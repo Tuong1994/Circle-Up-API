@@ -70,7 +70,7 @@ export class DistrictService {
   async createDistrict(district: DistrictDto) {
     const { nameEn, nameVn, code, cityCode } = district;
     const newDistrict = await this.prisma.district.create({
-      data: { nameEn, nameVn, code, cityCode, isDelete: false },
+      data: { nameEn, nameVn, code, cityCode },
     });
     return newDistrict;
   }

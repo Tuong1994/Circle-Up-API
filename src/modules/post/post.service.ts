@@ -4,7 +4,7 @@ import { QueryDto } from 'src/common/dto/query.dto';
 import { Paging } from 'src/common/type/base';
 import { Post } from '@prisma/client';
 import { PostHelper } from './post.helper';
-import { PostDto } from './post.dto';
+import { PostDto, PostTagDto } from './post.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import responseMessage from 'src/common/message';
 import utils from 'src/utils';
@@ -61,7 +61,6 @@ export class PostService {
         feeling: Number(feeling),
         cityCode: Number(cityCode),
         audience: Number(audience),
-        isDelete: false,
       },
       select: { ...this.postHelper.getPostFields() },
     });
@@ -89,6 +88,21 @@ export class PostService {
       },
     });
     return postWithMedia;
+  }
+
+  async createPostTags(postTags: PostTagDto) {
+    const { userIds, postId } = postTags;
+    const existingTags = await this.prisma.postOnUser.findMany({
+      where: { postId, userId: { in: userIds } },
+      select: { userId: true },
+    });
+    const existingUserIds = new Set(existingTags.map((tag) => tag.userId));
+    const newUserIds = userIds.filter((userId) => !existingUserIds.has(userId));
+    const newTags = await this.prisma.postOnUser.createMany({
+      data: newUserIds.map((userId) => ({ userId, postId })),
+      skipDuplicates: true,
+    });
+    return newTags;
   }
 
   async updatePost(query: QueryDto, files: Express.Multer.File[], post: PostDto) {

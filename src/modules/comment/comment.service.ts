@@ -53,7 +53,7 @@ export class CommentService {
   async createComment(comment: CommentDto) {
     const { content, userId, postId, parentId } = comment;
     const newComment = await this.prisma.comment.create({
-      data: { content, userId, postId, parentId, isDelete: false },
+      data: { content, userId, postId, parentId },
     });
     return newComment;
   }

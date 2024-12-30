@@ -73,9 +73,7 @@ export class WardService {
 
   async createWard(ward: WardDto) {
     const { nameEn, nameVn, code, districtCode } = ward;
-    const newWard = await this.prisma.ward.create({
-      data: { nameEn, nameVn, code, districtCode, isDelete: false },
-    });
+    const newWard = await this.prisma.ward.create({ data: { nameEn, nameVn, code, districtCode } });
     return newWard;
   }
 

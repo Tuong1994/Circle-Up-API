@@ -37,7 +37,7 @@ export class LikeService {
 
   async createLike(like: LikeDto) {
     const { userId, postId } = like;
-    const newLike = await this.prisma.like.create({ data: { userId, postId, isDelete: false } });
+    const newLike = await this.prisma.like.create({ data: { userId, postId } });
     return newLike;
   }
 

@@ -67,15 +67,15 @@ export class UserService {
     const hash = utils.bcryptHash(password);
     const fullName = this.userHelper.getUserFullName(firstName, lastName);
     const newUser = await this.prisma.user.create({
-      data: { firstName, lastName, fullName, role, isDelete: false },
+      data: { firstName, lastName, fullName, role },
       select: { ...this.userHelper.getUserFields() },
     });
     const newUserEmail = await this.prisma.userEmail.create({
-      data: { email, password: hash, userId: newUser.id, isDelete: false, audience: EAudience.PUBLIC },
+      data: { email, password: hash, userId: newUser.id, audience: EAudience.PUBLIC },
       select: { ...this.userHelper.getUserEmailFields() },
     });
     const userResponse = { ...newUser, account: { ...newUserEmail } };
-    return userResponse
+    return userResponse;
   }
 
   async createUserInfo(info: UserInfoDto) {
@@ -83,11 +83,11 @@ export class UserService {
     let newInfo: UserInfo | UserEmail;
     if (type === EUserInfoType.EMAIL) {
       newInfo = await this.prisma.userEmail.create({
-        data: { email, password: undefined, audience, userId, isDelete: false },
+        data: { email, password: undefined, audience, userId },
       });
     } else {
       newInfo = await this.prisma.userInfo.create({
-        data: { content, type, audience, userId, isDelete: false },
+        data: { content, type, audience, userId },
       });
     }
     return newInfo;
@@ -97,18 +97,16 @@ export class UserService {
     const { company, position, cityCode, description, isCurrently, userId, audience, startDate, endDate } =
       work;
     const newWork = await this.prisma.userWork.create({
-      data: { company, position, cityCode, description, isCurrently, audience, userId, isDelete: false },
+      data: { company, position, cityCode, description, isCurrently, audience, userId },
     });
     if (!newWork) throw new HttpException(SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
-    const newTimePeriod = await this.prisma.timePeriod.create({
-      data: { userWorkId: newWork.id, isDelete: false },
-    });
+    const newTimePeriod = await this.prisma.timePeriod.create({ data: { userWorkId: newWork.id } });
     await this.prisma.dateRange.create({
-      data: { ...startDate, startDateId: newTimePeriod.id, isDelete: false },
+      data: { ...startDate, startDateId: newTimePeriod.id },
     });
     if (!newWork.isCurrently) {
       await this.prisma.dateRange.create({
-        data: { ...endDate, endDateId: newTimePeriod.id, isDelete: false },
+        data: { ...endDate, endDateId: newTimePeriod.id },
       });
     }
     return newWork;
@@ -117,17 +115,17 @@ export class UserService {
   async createUserEducation(eduaction: UserEducationDto) {
     const { school, description, isGraduated, audience, userId, startDate, endDate } = eduaction;
     const newEducation = await this.prisma.userEducation.create({
-      data: { school, description, isGraduated, audience, userId, isDelete: false },
+      data: { school, description, isGraduated, audience, userId },
     });
     const newTimePeriod = await this.prisma.timePeriod.create({
-      data: { userEducationId: newEducation.id, isDelete: false },
+      data: { userEducationId: newEducation.id },
     });
     await this.prisma.dateRange.create({
-      data: { ...startDate, startDateId: newTimePeriod.id, isDelete: false },
+      data: { ...startDate, startDateId: newTimePeriod.id },
     });
     if (!newEducation.isGraduated) {
       await this.prisma.dateRange.create({
-        data: { ...endDate, endDateId: newTimePeriod.id, isDelete: false },
+        data: { ...endDate, endDateId: newTimePeriod.id },
       });
     }
     return newEducation;
@@ -136,7 +134,7 @@ export class UserService {
   async createUserLived(lived: UserLivedDto) {
     const { cityCode, districtCode, audience, userId } = lived;
     const newLived = await this.prisma.userLived.create({
-      data: { cityCode, districtCode, audience, userId, isDelete: false },
+      data: { cityCode, districtCode, audience, userId },
     });
     return newLived;
   }
