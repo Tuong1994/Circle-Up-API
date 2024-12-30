@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { PostModule } from './post/post.module';
 import { FollowModule } from './follow/follow.module';
+import { FriendModule } from './friend/friend.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { FollowModule } from './follow/follow.module';
     AuthModule,
     UserModule,
     PostModule,
+    FriendModule,
     FollowModule,
     CommentModule,
     LikeModule,

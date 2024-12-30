@@ -13,6 +13,7 @@ export class QueryDto {
   userEducationId?: string;
   userLivedId?: string;
   postId?: string;
+  friendId?: string;
   eventId?: string;
   followId?: string;
   followedId?: string;

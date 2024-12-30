@@ -50,19 +50,19 @@ export class FollowService {
 
   async removeFollows(query: QueryDto) {
     const { ids } = query;
-    const listId = ids.split(',');
-    const follows = await this.prisma.follow.findMany({ where: { id: { in: listId } } });
+    const listIds = ids.split(',');
+    const follows = await this.prisma.follow.findMany({ where: { id: { in: listIds } } });
     if (follows && !follows.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
-    await this.prisma.follow.updateMany({ where: { id: { in: listId } }, data: { isDelete: true } });
+    await this.prisma.follow.updateMany({ where: { id: { in: listIds } }, data: { isDelete: true } });
     throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
   async removeFollowsPermanent(query: QueryDto) {
     const { ids } = query;
-    const listId = ids.split(',');
-    const follows = await this.prisma.follow.findMany({ where: { id: { in: listId } } });
+    const listIds = ids.split(',');
+    const follows = await this.prisma.follow.findMany({ where: { id: { in: listIds } } });
     if (follows && !follows.length) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
-    await this.prisma.follow.deleteMany({ where: { id: { in: listId } } });
+    await this.prisma.follow.deleteMany({ where: { id: { in: listIds } } });
     throw new HttpException(REMOVE, HttpStatus.OK);
   }
 
