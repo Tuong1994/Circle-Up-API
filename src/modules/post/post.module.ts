@@ -4,10 +4,11 @@ import { PostService } from './post.service';
 import { PostHelper } from './post.helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { CheckIdMiddleware } from 'src/common/middleware/checkId.middleware';
+import { MediaHelper } from '../media/media.helper';
 
 @Module({
   controllers: [PostController],
-  providers: [PostService, PostHelper],
+  providers: [PostService, PostHelper, MediaHelper],
 })
 export class PostModule implements NestModule {
   constructor(private prisma: PrismaService) {}

@@ -4,6 +4,7 @@ import { QueryDto } from 'src/common/dto/query.dto';
 import { Paging } from 'src/common/type/base';
 import { Post } from '@prisma/client';
 import { PostHelper } from './post.helper';
+import { MediaHelper } from '../media/media.helper';
 import { PostDto, PostTagDto } from './post.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import responseMessage from 'src/common/message';
@@ -16,6 +17,7 @@ export class PostService {
   constructor(
     private prisma: PrismaService,
     private postHelper: PostHelper,
+    private mediaHelper: MediaHelper,
     private cloudinary: CloudinaryService,
   ) {}
 
@@ -67,7 +69,7 @@ export class PostService {
     if (!files || !files.length) return newPost;
     await Promise.all(
       files.map(async (file) => {
-        const { existMedia, fileHash } = await this.postHelper.getExistedMedia(file);
+        const { existMedia, fileHash } = await this.mediaHelper.getExistedMedia(file);
         if (existMedia) return;
         const result = await this.cloudinary.upload(utils.getFileUrl(file));
         const generateFile = utils.generateFile(result, {
@@ -121,7 +123,7 @@ export class PostService {
     if (!files || !files.length) throw new HttpException(UPDATE, HttpStatus.OK);
     await Promise.all(
       files.map(async (file) => {
-        const { existMedia, fileHash } = await this.postHelper.getExistedMedia(file);
+        const { existMedia, fileHash } = await this.mediaHelper.getExistedMedia(file);
         if (existMedia) return;
         const result = await this.cloudinary.upload(utils.getFileUrl(file));
         const generateFile = utils.generateFile(result, {

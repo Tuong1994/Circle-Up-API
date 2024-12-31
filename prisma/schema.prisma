@@ -25,12 +25,15 @@ model User {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   auth              Auth?
+  saved             Saved?
   permission        Permission?
   account           UserEmail?
   lived             UserLived?
   infos             UserInfo[]
   works             UserWork[]
   educations        UserEducation[]
+  collections       Collection[]
+  albums            Album[]
   medias            Media[]
   likes             Like[]
   comments          Comment[]
@@ -193,6 +196,32 @@ model Friend {
   @@index([isDelete])
 }
 
+model Collection {
+  id         String   @id @default(uuid())
+  isDelete   Boolean? @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  savedItems Saved[]
+
+  @@index([isDelete])
+}
+
+model Saved {
+  id           String      @id @default(uuid())
+  isDelete     Boolean?    @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  userId       String      @unique
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  posts        Post[]
+
+  @@index([isDelete])
+}
+
 model Post {
   id        String       @id @default(uuid())
   content   String
@@ -204,6 +233,8 @@ model Post {
   updatedAt DateTime     @updatedAt
   userId    String
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  savedId   String?
+  saved     Saved?       @relation(fields: [savedId], references: [id], onDelete: Cascade)
   comments  Comment[]
   likes     Like[]
   medias    Media[]
@@ -297,6 +328,18 @@ model Like {
   @@index([isDelete])
 }
 
+model Album {
+  id        String   @id @default(uuid())
+  isDelete  Boolean? @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medias    Media[]
+
+  @@index([isDelete])
+}
+
 model Media {
   id        String   @id @default(uuid())
   path      String
@@ -311,6 +354,8 @@ model Media {
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   postId    String?
   post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  albumId   String?
+  album     Album?   @relation(fields: [albumId], references: [id], onDelete: Cascade)
 
   @@index([isDelete])
 }

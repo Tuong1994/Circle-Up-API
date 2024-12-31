@@ -43,15 +43,6 @@ export class PostHelper {
     return { userId: true };
   }
 
-  async getExistedMedia(file: Express.Multer.File) {
-    const fileHash = utils.generateFileHash(file);
-    const existMedia = await this.prisma.media.findUnique({
-      where: { hash: fileHash },
-      select: { ...this.getPostMediaFields() },
-    });
-    return { fileHash, existMedia };
-  }
-
   async handleUpdateIsDeletePostComments(post: PostWithPayload, isDelete: boolean) {
     await this.prisma.comment.updateMany({ where: { postId: post.id }, data: { isDelete } });
   }

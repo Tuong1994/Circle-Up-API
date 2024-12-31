@@ -11,6 +11,7 @@ const posts: Post[] = Array.from({ length: 50 }, (_, index) => ({
   feeling: feelings[index % Object.values(EPostFeeling).length] as EPostFeeling,
   audience: EAudience.PUBLIC,
   cityCode: null,
+  savedId: null,
   isDelete: false,
   createdAt: new Date(),
   updatedAt: new Date(),
