@@ -18,9 +18,12 @@ export class QueryDto {
   followId?: string;
   followedId?: string;
   followerId?: string;
+  mediaId?: string;
+  albumId?: string;
+  savedId?: string;
+  collectionId?: string;
   commentId?: string;
   likeId?: string;
-  mediaId?: string;
   cityId?: string;
   districtId?: string;
   wardId?: string;

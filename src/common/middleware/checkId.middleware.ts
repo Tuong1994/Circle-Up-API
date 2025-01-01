@@ -1,6 +1,9 @@
 import { HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { NextFunction, Request, Response } from 'express';
+import responseMessage from '../message';
+
+const { NO_ID, NOT_FOUND } = responseMessage;
 
 @Injectable()
 export class CheckIdMiddleware implements NestMiddleware {
@@ -23,6 +26,9 @@ export class CheckIdMiddleware implements NestMiddleware {
       postId,
       friendId,
       eventId,
+      albumId,
+      savedId,
+      collectionId,
       followId,
       followerId,
       followedId,
@@ -50,11 +56,14 @@ export class CheckIdMiddleware implements NestMiddleware {
       !commentId &&
       !likeId &&
       !mediaId &&
+      !albumId &&
+      !savedId &&
+      !collectionId &&
       !cityId &&
       !districtId &&
       !wardId
     ) {
-      throw new HttpException('Id is not provided', HttpStatus.BAD_REQUEST);
+      throw new HttpException(NO_ID, HttpStatus.BAD_REQUEST);
     }
 
     if (ids) return next();
@@ -78,6 +87,9 @@ export class CheckIdMiddleware implements NestMiddleware {
             commentId ||
             likeId ||
             mediaId ||
+            albumId ||
+            savedId ||
+            collectionId ||
             cityId ||
             districtId ||
             wardId,
@@ -86,7 +98,7 @@ export class CheckIdMiddleware implements NestMiddleware {
       },
     });
 
-    if (!record) throw new HttpException('Record not found', HttpStatus.NOT_FOUND);
+    if (!record) throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
     next();
   }
 }

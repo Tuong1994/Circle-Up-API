@@ -15,6 +15,7 @@ import { PostModule } from './post/post.module';
 import { FollowModule } from './follow/follow.module';
 import { FriendModule } from './friend/friend.module';
 import { MediaModule } from './media/media.module';
+import { AlbumModule } from './album/album.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { MediaModule } from './media/media.module';
     CommentModule,
     LikeModule,
     MediaModule,
+    AlbumModule,
     CityModule,
     DistrictModule,
     WardModule,

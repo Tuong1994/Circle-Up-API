@@ -15,6 +15,8 @@ export class MediaHelper {
       size: true,
       type: true,
       hash: true,
+      createdAt: true,
+      updatedAt: true,
     };
   }
 

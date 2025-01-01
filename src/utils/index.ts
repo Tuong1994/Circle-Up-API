@@ -11,6 +11,7 @@ type FileExtraData = {
   type: EMediaType;
   userId?: string;
   postId?: string;
+  albumId?: string;
 };
 
 const utils = {
