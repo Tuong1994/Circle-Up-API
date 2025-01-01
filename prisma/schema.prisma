@@ -233,7 +233,7 @@ model Post {
   userId    String
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   savedId   String?
-  saved     Saved?       @relation(fields: [savedId], references: [id], onDelete: Cascade)
+  saved     Saved?       @relation(fields: [savedId], references: [id])
   comments  Comment[]
   likes     Like[]
   medias    Media[]
