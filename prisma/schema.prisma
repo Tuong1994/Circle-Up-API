@@ -25,7 +25,6 @@ model User {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   auth              Auth?
-  saved             Saved?
   permission        Permission?
   account           UserEmail?
   lived             UserLived?
@@ -196,49 +195,36 @@ model Friend {
 }
 
 model Collection {
-  id         String   @id @default(uuid())
-  isDelete   Boolean? @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  savedItems Saved[]
-
-  @@index([isDelete])
-}
-
-model Saved {
-  id           String      @id @default(uuid())
-  isDelete     Boolean?    @default(false)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  userId       String      @unique
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  collectionId String?
-  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  posts        Post[]
+  id        String   @id @default(uuid())
+  name      String
+  isDelete  Boolean? @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts     Post[]
 
   @@index([isDelete])
 }
 
 model Post {
-  id        String       @id @default(uuid())
-  content   String
-  cityCode  Int?
-  feeling   Int?
-  audience  Int
-  isDelete  Boolean?     @default(false)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  userId    String
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  savedId   String?
-  saved     Saved?       @relation(fields: [savedId], references: [id])
-  comments  Comment[]
-  likes     Like[]
-  medias    Media[]
-  followers Follow[]
-  tags      PostOnUser[]
+  id           String       @id @default(uuid())
+  content      String
+  cityCode     Int?
+  feeling      Int?
+  audience     Int
+  isDelete     Boolean?     @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionId String?
+  collection   Collection?  @relation(fields: [collectionId], references: [id])
+  comments     Comment[]
+  likes        Like[]
+  medias       Media[]
+  followers    Follow[]
+  tags         PostOnUser[]
 
   @@index([isDelete])
 }

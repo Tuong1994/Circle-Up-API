@@ -57,7 +57,7 @@ export class PostController {
     return this.postService.updatePost(query, files, post);
   }
 
-  @Post('remove')
+  @Delete('remove')
   @Roles(ERole.STAFF, ERole.LEADER, ERole.MANAGER)
   @UseGuards(JwtGuard, RoleGuard)
   @HttpCode(HttpStatus.OK)

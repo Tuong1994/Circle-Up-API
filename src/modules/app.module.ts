@@ -16,7 +16,7 @@ import { FollowModule } from './follow/follow.module';
 import { FriendModule } from './friend/friend.module';
 import { MediaModule } from './media/media.module';
 import { AlbumModule } from './album/album.module';
-import { SavedModule } from './saved/saved.module';
+import { CollectionModule } from './collection/collection.module';
 
 @Module({
   imports: [
@@ -34,7 +34,7 @@ import { SavedModule } from './saved/saved.module';
     LikeModule,
     MediaModule,
     AlbumModule,
-    SavedModule,
+    CollectionModule,
     CityModule,
     DistrictModule,
     WardModule,

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { FollowService } from './follow.service';
 import { QueryPaging } from 'src/common/decorator/query.decorator';
 import { QueryDto } from 'src/common/dto/query.dto';
@@ -37,14 +37,14 @@ export class FollowController {
     return this.followService.updateFollow(query, follow);
   }
 
-  @Post('remove')
+  @Delete('remove')
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   removeFollows(@Query() query: QueryDto) {
     return this.followService.removeFollows(query);
   }
 
-  @Post('removePermanent')
+  @Delete('removePermanent')
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   removeFollowsPermanent(@Query() query: QueryDto) {

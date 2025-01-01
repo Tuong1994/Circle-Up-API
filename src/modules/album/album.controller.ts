@@ -65,7 +65,7 @@ export class AlbumController {
     return this.albumService.updateAlbum(query, album, files);
   }
 
-  @Post('remove')
+  @Delete('remove')
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   removeAlbums(@Query() query: QueryDto) {

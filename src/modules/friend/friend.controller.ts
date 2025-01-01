@@ -51,7 +51,7 @@ export class FriendController {
     return this.friendService.updateFriend(query, friend);
   }
 
-  @Post('remove')
+  @Delete('remove')
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   removeFriends(query: QueryDto) {
