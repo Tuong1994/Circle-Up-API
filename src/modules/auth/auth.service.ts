@@ -35,6 +35,7 @@ export class AuthService {
       firstName: isRegistered.user.firstName,
       lastName: isRegistered.user.lastName,
       fullName: isRegistered.user.fullName,
+      role: isRegistered.user.role,
     };
     const tokenPayload: TokenPayload = {
       email,
