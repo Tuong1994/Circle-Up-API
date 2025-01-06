@@ -25,7 +25,6 @@ model User {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   auth              Auth?
-  permission        Permission?
   account           UserEmail?
   lived             UserLived?
   infos             UserInfo[]
@@ -152,20 +151,6 @@ model DateRange {
   startDate   TimePeriod? @relation("startDate", fields: [startDateId], references: [id], onDelete: Cascade)
   endDateId   String?     @unique
   endDate     TimePeriod? @relation("endDate", fields: [endDateId], references: [id], onDelete: Cascade)
-
-  @@index([isDelete])
-}
-
-model Permission {
-  id        String   @id @default(uuid())
-  create    Boolean
-  update    Boolean
-  remove    Boolean
-  isDelete  Boolean? @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([isDelete])
 }
