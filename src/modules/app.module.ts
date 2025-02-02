@@ -17,10 +17,12 @@ import { FriendModule } from './friend/friend.module';
 import { MediaModule } from './media/media.module';
 import { AlbumModule } from './album/album.module';
 import { CollectionModule } from './collection/collection.module';
+import { GlobalModule } from './global/global.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    GlobalModule,
     PrismaModule,
     CloudinaryModule,
     ExcelModule,

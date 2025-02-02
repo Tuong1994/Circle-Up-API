@@ -28,7 +28,7 @@ export class PostController {
   constructor(private postService: PostService) {}
 
   @Get('list')
-  @UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   getPosts(@QueryPaging() query: QueryDto) {
     return this.postService.getPosts(query);
