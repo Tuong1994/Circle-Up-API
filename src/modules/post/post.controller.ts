@@ -35,7 +35,7 @@ export class PostController {
   }
 
   @Get('detail')
-  @UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   getPost(@Query() query: QueryDto) {
     return this.postService.getPost(query);
