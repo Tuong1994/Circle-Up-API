@@ -29,8 +29,6 @@ export class AuthService {
     if (!isRegistered) throw new HttpException('Email is not correct', HttpStatus.NOT_FOUND);
     const isAuth = bcryptjs.compareSync(password, isRegistered.password);
     if (!isAuth) throw new ForbiddenException('Password is not correct');
-    const isAlreadyAuth = await this.prisma.auth.findUnique({ where: { userId: isRegistered.user.id } });
-    if (isAlreadyAuth) throw new HttpException('You have already login', HttpStatus.BAD_REQUEST);
     const resPayload = {
       id: isRegistered.user.id,
       email: isRegistered.email,
