@@ -22,7 +22,7 @@ export class AuthHelper {
   }
 
   async getAccessToken(payload: TokenPayload) {
-    const expiresIn = '30m';
+    const expiresIn = '2m';
     const exp = Date.now() + this.parseDurationToMilliseconds(expiresIn);
     const token = await this.jwt.signAsync(payload, {
       secret: this.config.get('ACCESS_TOKEN_SECRET'),
@@ -34,7 +34,7 @@ export class AuthHelper {
   async getRefreshToken(payload: TokenPayload) {
     const token = await this.jwt.signAsync(payload, {
       secret: this.config.get('REFRESH_TOKEN_SECRET'),
-      expiresIn: '24h',
+      expiresIn: '1m',
     });
     return token;
   }
