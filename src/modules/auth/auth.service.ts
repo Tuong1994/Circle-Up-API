@@ -76,7 +76,11 @@ export class AuthService {
     await this.prisma.userEmail.create({
       data: { email, password: hash, userId: register.id, audience: EAudience.PUBLIC, isDelete: false },
     });
-    return register;
+    const newUser = await this.prisma.user.findUnique({
+      where: { id: register.id },
+      include: { account: { select: { email: true } } },
+    });
+    return newUser;
   }
 
   async refresh(query: QueryDto) {

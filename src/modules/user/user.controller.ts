@@ -115,8 +115,8 @@ export class UserController {
   }
 
   @Delete('removePermanent')
-  @Roles(ERole.LEADER, ERole.MANAGER)
-  @UseGuards(JwtGuard, RoleGuard)
+  // @Roles(ERole.LEADER, ERole.MANAGER)
+  // @UseGuards(JwtGuard, RoleGuard)
   @HttpCode(HttpStatus.OK)
   removeUsersPermanent(@Query() query: QueryDto) {
     return this.userService.removeUsersPermanent(query);
