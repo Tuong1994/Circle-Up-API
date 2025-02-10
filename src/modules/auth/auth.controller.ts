@@ -1,12 +1,18 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
-import { AuthChangePasswordDto, AuthSignInDto, AuthSignUpDto } from './auth.dto';
+import { AuthChangePasswordDto, AuthEmailDto, AuthSignInDto, AuthSignUpDto } from './auth.dto';
 import { QueryDto } from 'src/common/dto/query.dto';
 
 @Controller('api/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  @Post('validateEmail')
+  @HttpCode(HttpStatus.OK)
+  validateEmail(@Body() auth: AuthEmailDto) {
+    return this.authService.validateEmail(auth);
+  }
 
   @Post('signIn')
   @HttpCode(HttpStatus.OK)

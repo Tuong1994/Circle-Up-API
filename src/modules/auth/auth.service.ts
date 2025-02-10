@@ -2,7 +2,7 @@ import * as bcryptjs from 'bcryptjs';
 import { ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
-import { AuthChangePasswordDto, AuthSignInDto, AuthSignUpDto } from './auth.dto';
+import { AuthChangePasswordDto, AuthEmailDto, AuthSignInDto, AuthSignUpDto } from './auth.dto';
 import { TokenPayload } from './auth.type';
 import { AuthHelper } from './auth.helper';
 import { ConfigService } from '@nestjs/config';
@@ -19,6 +19,13 @@ export class AuthService {
     private authHelper: AuthHelper,
     private jwt: JwtService,
   ) {}
+
+  async validateEmail(auth: AuthEmailDto) {
+    const { email } = auth;
+    const emailExist = await this.prisma.userEmail.findUnique({ where: { email } });
+    if (emailExist) throw new HttpException('Email already exist', HttpStatus.BAD_REQUEST);
+    throw new HttpException('Email valid', HttpStatus.OK);
+  }
 
   async signIn(res: Response, auth: AuthSignInDto) {
     const { email, password } = auth;
